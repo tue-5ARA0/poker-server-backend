@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  grpc:
+    build: .
+    command: python manage.py grpcrunserver --settings=configurations.prod.settings
+    volumes:
+      - .:/code
+    ports:
+      - "50051:50051"
+    depends_on:
+      - db
