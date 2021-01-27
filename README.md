@@ -20,5 +20,5 @@ migrate.sh
 
 You can now start a local server instance:
 ```
-python manage.py grpcrunserver --dev
+python manage.py grpcrunserver --dev --settings=settings
 ```

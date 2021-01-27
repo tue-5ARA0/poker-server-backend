@@ -87,7 +87,7 @@ class GameCoordinatorService(Service):
                 if isinstance(response, KuhnGameLobbyStageCardDeal):
                     state = f'CARD:{ response.turn_order }:{ response.card }'
                     actions = response.actions
-                    card_image = Card(response.card).get_image(0.1).tobytes('raw')
+                    card_image = Card(response.card).get_image().tobytes('raw')
                     yield game_pb2.PlayGameResponse(state = state, available_actions = actions, card_image = card_image)
                 # Normally the game coordinator returns an instance of KuhnGameLobbyStageMessage
                 # It contains 'state' and 'available_actions' fields
