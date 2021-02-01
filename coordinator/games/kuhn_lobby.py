@@ -112,6 +112,9 @@ class KuhnGameLobby(object):
     class PlayerAlreadyExistError(Exception):
         pass
 
+    class PlayerDisconnected(Exception):
+        pass
+
     def __init__(self, game_id: str):
         self.lock = threading.Lock()
         self.game_id = game_id
@@ -299,6 +302,9 @@ class KuhnGameLobby(object):
                         game_db.is_failed = True
                         game_db.error = error
                         game_db.save(update_fields = ['is_failed', 'error'])
+                        for player in self.get_players():
+                            player.send_error(KuhnGameLobbyStageError(error))
+                        self._lobby_coordinator_thread._stop()
                 except Exception as e:
                     print("Unexpected error: ", e)
 
@@ -345,14 +351,10 @@ def game_lobby_coordinator(lobby: KuhnGameLobby, messages_timeout: int):
 
                     if current_round.stage.is_terminal():
                         # If the stage is terminal we notify both players and start a new round if both players have non-negative bank
-                        # TODO
                         for player in lobby.get_players():
-                            player.send_message(
-                                KuhnGameLobbyStageMessage(
-                                    f'END:{lobby.convert_evaluation(current_round.stage.evaluation(), player.player_id)}:{current_round.stage.inf_set()}',
-                                    ['START']
-                                )
-                            )
+                            end_round_state = f'END:{lobby.convert_evaluation(current_round.stage.evaluation(), player.player_id)}:' \
+                                              f'{current_round.stage.inf_set()}'
+                            player.send_message(KuhnGameLobbyStageMessage(end_round_state, ['START']))
                         lobby.evaluate_round()
                         current_round = lobby.create_new_round()
                     else:
@@ -369,6 +371,8 @@ def game_lobby_coordinator(lobby: KuhnGameLobby, messages_timeout: int):
                     continue
 
             except queue.Empty:
+                if lobby.is_finished():
+                    return
                 raise Exception(f'There was no message from a player for more than {messages_timeout} sec.')
 
     except Exception as e:

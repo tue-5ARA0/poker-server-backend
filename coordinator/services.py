@@ -1,5 +1,6 @@
 import grpc
 import sys
+import queue
 import threading
 
 from coordinator.games.kuhn_lobby import KuhnGameLobby, KuhnGameLobbyPlayerMessage, KuhnGameLobbyStageMessage, KuhnGameLobbyStageError, \
@@ -8,6 +9,10 @@ from django_grpc_framework.services import Service
 from coordinator.models import Game, Player, GameTypes
 from coordinator.utilities.card import Card
 from proto.game import game_pb2
+
+
+def PlayGRPCTerminationCallback():
+    print('ended')
 
 
 class GameCoordinatorService(Service):
@@ -55,6 +60,19 @@ class GameCoordinatorService(Service):
         game_id = metadata['game_id']
         lobby = GameCoordinatorService.create_game_lobby_instance(game_id)
 
+        print(f'[INFO]: Player \'{token}\' is trying to connect to lobby \'{lobby.game_id}\'')
+
+        def GRPCConnectionTerminationCallback():
+            if lobby.is_player_registered(token) and not lobby.is_finished():
+                print(f'ERROR: Lobby \'{game_id}\' terminated before its finished')
+                # TODO: notify opponent
+                # TODO: set error in database
+                lobby.finish(error = f'Lobby terminated before its finished. Another player possible '
+                                     f'has disconnected from the game due to exception.')
+                GameCoordinatorService.remove_game_lobby_instance(game_id)
+
+        context.add_callback(GRPCConnectionTerminationCallback)
+
         try:
             # We look up for a game object in database
             # It should exist at this point otherwise function throws an error and game ends immediately
@@ -82,10 +100,17 @@ class GameCoordinatorService(Service):
                     lobby.channel.put(KuhnGameLobbyPlayerMessage(token, message.action))
 
                 # Waiting for a response from the game coordinator about another player's decision and available actions
-                response = player_channel.get()
+                response = None
+                while (not lobby.is_finished() and response is None) or not player_channel.empty():
+                    try:
+                        response = player_channel.get(timeout = 1)
+                    except queue.Empty:
+                        if lobby.is_finished() and player_channel.empty():
+                            print(f'Error: Lobby \'{game_id}\' has been finished while waiting for response from player.')
+                            return
 
                 if isinstance(response, KuhnGameLobbyStageCardDeal):
-                    state = f'CARD:{ response.turn_order }:{ response.card }'
+                    state = f'CARD:{response.turn_order}:{response.card}'
                     actions = response.actions
                     card_image = Card(response.card).get_image().tobytes('raw')
                     yield game_pb2.PlayGameResponse(state = state, available_actions = actions, card_image = card_image)
@@ -105,15 +130,14 @@ class GameCoordinatorService(Service):
 
             if lobby.is_player_registered(token):
                 GameCoordinatorService.remove_game_lobby_instance(game_id)
-        except grpc.RpcError:
-            pass
+
         except KuhnGameLobby.GameLobbyFullError:
             yield game_pb2.PlayGameResponse(state = f'ERROR: Game lobby is full', available_actions = [])
         except KuhnGameLobby.PlayerAlreadyExistError:
             yield game_pb2.PlayGameResponse(state = f'ERROR: Player with the same id is already exist in this lobby',
                                             available_actions = [])
         except Exception as e:
-            yield game_pb2.PlayGameResponse(state = f'ERROR:{e}', available_actions = [])
+            yield game_pb2.PlayGameResponse(state = f'ERROR: {e}', available_actions = [])
             if lobby.is_player_registered(token):
                 GameCoordinatorService.remove_game_lobby_instance(game_id)
 
