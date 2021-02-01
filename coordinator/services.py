@@ -22,6 +22,10 @@ class GameCoordinatorService(Service):
     # noinspection PyPep8Naming,PyMethodMayBeStatic
     def Create(self, request, context):
         player = Player.objects.get(token = request.token)
+
+        if player.is_disabled:
+            raise Exception(f'User is disabled')
+
         new_game = Game(created_by = player.token, game_type = GameTypes.PLAYER_PLAYER)
         instance = GameCoordinatorService.create_game_lobby_instance(new_game.id)
         if instance is not None:
@@ -33,6 +37,10 @@ class GameCoordinatorService(Service):
     # noinspection PyPep8Naming,PyMethodMayBeStatic
     def FindOrCreate(self, request, context):
         player = Player.objects.get(token = request.token)
+
+        if player.is_disabled:
+            raise Exception(f'User is disabled')
+
         game_candidates = Game.objects.filter(game_type = GameTypes.PLAYER_PLAYER, is_started = False,
                                               is_failed = False, is_finished = False)
         if len(game_candidates) == 0:
@@ -49,6 +57,10 @@ class GameCoordinatorService(Service):
     # noinspection PyPep8Naming,PyMethodMayBeStatic
     def List(self, request, context):
         player = Player.objects.get(token = request.token)
+
+        if player.is_disabled:
+            raise Exception(f'User is disabled')
+
         games = Game.objects.filter(created_by = player.token)
         return game_pb2.ListGameResponse(game_ids = list(map(lambda game: str(game.id), games)))
 
@@ -57,6 +69,12 @@ class GameCoordinatorService(Service):
         # First check method's metadata and extract player's secret token and game_id
         metadata = dict(context.invocation_metadata())
         token = metadata['token']
+
+        player = Player.objects.get(token = token)
+
+        if player.is_disabled:
+            raise Exception(f'User is disabled')
+
         game_id = metadata['game_id']
         lobby = GameCoordinatorService.create_game_lobby_instance(game_id)
 

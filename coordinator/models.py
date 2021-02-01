@@ -59,10 +59,11 @@ class Player(models.Model):
     public_token = models.UUIDField(default = uuid.uuid4, editable = False, null = False)
     name = models.CharField(max_length = 128, null = False, default = pick_random_username)
     email = models.EmailField(null = True)
+    is_disabled = models.BooleanField(null = False, editable = True, default = False)
 
 
 class PlayerAdmin(admin.ModelAdmin):
-    list_display = ('token', 'public_token', 'name', 'email')
+    list_display = ('token', 'public_token', 'name', 'email', 'is_disabled')
     readonly_fields = ('token', 'public_token')
 
     class Meta:

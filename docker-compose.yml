@@ -14,6 +14,7 @@ services:
       - -c
       - |
         python manage.py makemigrations --settings=configurations.prod.settings
+        python manage.py makemigrations coordinator --settings=configurations.prod.settings
         python manage.py migrate --run-syncdb --settings=configurations.prod.settings
     volumes:
       - .:/code
