@@ -183,6 +183,14 @@ class KuhnGameLobby(object):
             # For each player we create a separate channel for messages between game coordinator and player
             self._players[player_id] = KuhnGameLobbyPlayer(player_id, bank = KuhnGameLobby.InitialBank)
 
+            if self.get_num_players() == 1:
+                player_ids = self.get_player_ids()
+                player1_id = player_ids[0]
+
+                game_db = Game.objects.get(id = self.game_id)
+                game_db.player_1 = player1_id
+                game_db.save(update_fields = ['player_1'])
+
             # If both players are connected we set corresponding ids to self._player_opponent dictionary for easy lookup
             if self.get_num_players() == 2:
                 player_ids = self.get_player_ids()
