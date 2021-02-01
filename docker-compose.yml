@@ -8,7 +8,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
   migration:
-    build: .
     image: bvdmitri/poker-server-backend
     command:
       - /bin/bash
