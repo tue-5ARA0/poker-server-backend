@@ -9,7 +9,7 @@ services:
       - POSTGRES_PASSWORD=postgres
   migration:
     build: .
-    image: django_poker_server
+    image: bvdmitri/poker-server-backend
     command:
       - /bin/bash
       - -c
@@ -21,7 +21,7 @@ services:
     depends_on:
       - db
   django:
-    image: django_poker_server
+    image: bvdmitri/poker-server-backend
     command: python manage.py runserver 0.0.0.0:8000 --settings=configurations.prod.settings
     volumes:
       - .:/code
@@ -31,7 +31,7 @@ services:
       - migration
       - db
   grpc:
-    image: django_poker_server
+    image: bvdmitri/poker-server-backend
     command: python manage.py grpcrunserver --settings=configurations.prod.settings
     volumes:
       - .:/code
