@@ -62,14 +62,17 @@ class GameCoordinatorService(Service):
 
         print(f'[INFO]: Player \'{token}\' is trying to connect to lobby \'{lobby.game_id}\'')
 
+        callback_active = True
+
         def GRPCConnectionTerminationCallback():
-            if lobby.is_player_registered(token) and not lobby.is_finished():
-                print(f'ERROR: Lobby \'{game_id}\' terminated before its finished')
-                # TODO: notify opponent
-                # TODO: set error in database
-                lobby.finish(error = f'Lobby terminated before its finished. Another player possible '
-                                     f'has disconnected from the game due to exception.')
-                GameCoordinatorService.remove_game_lobby_instance(game_id)
+            if callback_active:
+                if lobby.is_player_registered(token) and not lobby.is_finished():
+                    print(f'ERROR: Lobby \'{game_id}\' terminated before its finished')
+                    # TODO: notify opponent
+                    # TODO: set error in database
+                    lobby.finish(error = f'Lobby terminated before its finished. Another player possible '
+                                         f'has disconnected from the game due to exception.')
+                    GameCoordinatorService.remove_game_lobby_instance(game_id)
 
         context.add_callback(GRPCConnectionTerminationCallback)
 
@@ -140,6 +143,8 @@ class GameCoordinatorService(Service):
             yield game_pb2.PlayGameResponse(state = f'ERROR: {e}', available_actions = [])
             if lobby.is_player_registered(token):
                 GameCoordinatorService.remove_game_lobby_instance(game_id)
+
+        callback_active = False
 
     @staticmethod
     def create_game_lobby_instance(game_id: str) -> KuhnGameLobby:
