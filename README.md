@@ -20,5 +20,16 @@ migrate.sh
 
 You can now start a local server instance:
 ```
-python manage.py grpcrunserver --dev --settings=settings
+python manage.py grpcrunserver --dev --settings=coonfigurations.dev.settings
 ```
+
+# Public Docker image
+
+It is also possible to run local server instance with Docker. 
+If you have Docker and Docker Compose installed on your machine use the following command to start local server:
+
+```
+docker-compose up
+```
+
+  

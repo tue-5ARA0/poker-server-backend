@@ -13,16 +13,16 @@ services:
       - /bin/bash
       - -c
       - |
-        python manage.py makemigrations --settings=configurations.prod.settings
-        python manage.py makemigrations coordinator --settings=configurations.prod.settings
-        python manage.py migrate --run-syncdb --settings=configurations.prod.settings
+        python manage.py makemigrations --settings=configurations.dev.settings
+        python manage.py makemigrations coordinator --settings=configurations.dev.settings
+        python manage.py migrate --run-syncdb --settings=configurations.dev.settings
     volumes:
       - .:/code
     depends_on:
       - db
   django:
     image: bvdmitri/poker-server-backend
-    command: python manage.py runserver 0.0.0.0:8000 --settings=configurations.prod.settings
+    command: python manage.py runserver 0.0.0.0:8000 --settings=configurations.dev.settings
     volumes:
       - .:/code
     ports:
@@ -32,7 +32,7 @@ services:
       - db
   grpc:
     image: bvdmitri/poker-server-backend
-    command: python manage.py grpcrunserver --settings=configurations.prod.settings
+    command: python manage.py grpcrunserver --settings=configurations.dev.settings
     volumes:
       - .:/code
     ports:

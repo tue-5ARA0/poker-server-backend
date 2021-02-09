@@ -86,8 +86,6 @@ class GameCoordinatorService(Service):
             if callback_active:
                 if lobby.is_player_registered(token) and not lobby.is_finished():
                     print(f'ERROR: Lobby \'{game_id}\' terminated before its finished')
-                    # TODO: notify opponent
-                    # TODO: set error in database
                     lobby.finish(error = f'Lobby terminated before its finished. Another player possible '
                                          f'has disconnected from the game due to exception.')
                     GameCoordinatorService.remove_game_lobby_instance(game_id)
