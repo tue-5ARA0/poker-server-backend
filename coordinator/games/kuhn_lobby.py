@@ -381,8 +381,8 @@ def game_lobby_coordinator(lobby: KuhnGameLobby, messages_timeout: int):
                         lobby.start_new_round(message.player_id)
                     else:
                         lobby.finish()
-                        for player in lobby.get_players():
-                            player.send_message(KuhnGameLobbyStageMessage(lobby.player_outcome(player.player_id), []))
+                        outcome = lobby.player_outcome(message.player_id)
+                        lobby.get_player(player_id = message.player_id).send_message(KuhnGameLobbyStageMessage(outcome, []))
                 # If message action is not 'START' we check that the message came from a player and assume it is their next action
                 elif message.player_id == current_round.player_id_turn:
                     # We register current player's action in an inner stage object
