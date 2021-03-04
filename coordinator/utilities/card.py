@@ -14,9 +14,6 @@ class Card:
         font_manager.findfont(font_manager.FontProperties(family = 'serif', style = 'normal', weight = 'normal')),
         font_manager.findfont(font_manager.FontProperties(family = 'serif', style = 'italic', weight = 'normal')),
         font_manager.findfont(font_manager.FontProperties(family = 'serif', style = 'normal', weight = 'medium')),
-        font_manager.findfont(font_manager.FontProperties(family = 'arial', style = 'normal', weight = 'normal')),
-        font_manager.findfont(font_manager.FontProperties(family = 'arial', style = 'italic', weight = 'normal')),
-        font_manager.findfont(font_manager.FontProperties(family = 'arial', style = 'normal', weight = 'medium')),
     ]
     IMG_SIZE = settings.CARD_GENERATED_IMAGE_SIZE
     NOISE_LEVEL = settings.CARD_GENERATED_IMAGE_NOISE_LEVEL
