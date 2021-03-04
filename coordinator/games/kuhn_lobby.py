@@ -3,6 +3,7 @@ import queue
 import random
 
 from typing import List, Union
+from django.conf import settings
 
 from coordinator.games.kuhn_game import KuhnRootChanceGameState
 from coordinator.games.kuhn_constants import CARDS_DEALINGS
@@ -116,8 +117,8 @@ class KuhnGameRound(object):
 
 
 class KuhnGameLobby(object):
-    InitialBank = 5
-    MessagesTimeout = 5
+    InitialBank = settings.LOBBY_INITIAL_BANK
+    MessagesTimeout = settings.LOBBY_WAITING_TIMEOUT
 
     class GameLobbyFullError(Exception):
         pass
@@ -228,7 +229,7 @@ class KuhnGameLobby(object):
 
     def wait_for_players(self):
         try:
-            self._player_connection_barrier.wait(timeout = 120)
+            self._player_connection_barrier.wait(timeout = settings.LOBBY_CONNECTION_TIMEOUT)
         except threading.BrokenBarrierError:
             self._logger.error('Timeout waiting for another player to connect')
             raise Exception('Timeout waiting for another player to connect')

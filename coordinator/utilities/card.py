@@ -7,7 +7,17 @@ from django.conf import settings
 
 class Card:
     RANKS = ['J', 'Q', 'K']
-    FONTS = font_manager.findSystemFonts(fontpaths = None, fontext = 'ttf')
+    FONTS = [
+        font_manager.findfont(font_manager.FontProperties(family = 'sans-serif', style = 'normal', weight = 'normal')),
+        font_manager.findfont(font_manager.FontProperties(family = 'sans-serif', style = 'italic', weight = 'normal')),
+        font_manager.findfont(font_manager.FontProperties(family = 'sans-serif', style = 'normal', weight = 'medium')),
+        font_manager.findfont(font_manager.FontProperties(family = 'serif', style = 'normal', weight = 'normal')),
+        font_manager.findfont(font_manager.FontProperties(family = 'serif', style = 'italic', weight = 'normal')),
+        font_manager.findfont(font_manager.FontProperties(family = 'serif', style = 'normal', weight = 'medium')),
+        font_manager.findfont(font_manager.FontProperties(family = 'arial', style = 'normal', weight = 'normal')),
+        font_manager.findfont(font_manager.FontProperties(family = 'arial', style = 'italic', weight = 'normal')),
+        font_manager.findfont(font_manager.FontProperties(family = 'arial', style = 'normal', weight = 'medium')),
+    ]
     IMG_SIZE = settings.CARD_GENERATED_IMAGE_SIZE
     NOISE_LEVEL = settings.CARD_GENERATED_IMAGE_NOISE_LEVEL
     ROTATE_MAX_ANGLE = settings.CARD_GENERATED_IMAGE_ROTATE_MAX_ANGLE
@@ -31,7 +41,7 @@ class Card:
         img = Image.new('L', (Card.IMG_SIZE, Card.IMG_SIZE), color = 255)
         draw = ImageDraw.Draw(img)
         (text_width, text_height) = draw.textsize(text, font = font)  # Extract text size
-        draw.text(((Card.IMG_SIZE - text_width) / 2, (Card.IMG_SIZE - text_height) / 2 - 3), text, fill = 0, font = font)
+        draw.text(((Card.IMG_SIZE - text_width) / 2, (Card.IMG_SIZE - text_height) / 2 - 4), text, fill = 0, font = font)
 
         # Random rotate transformation
         img = img.rotate(random.uniform(-Card.ROTATE_MAX_ANGLE, Card.ROTATE_MAX_ANGLE), expand = False, fillcolor = '#FFFFFF')

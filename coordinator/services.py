@@ -5,10 +5,12 @@ import threading
 
 from coordinator.games.kuhn_lobby import KuhnGameLobby, KuhnGameLobbyPlayerMessage, KuhnGameLobbyStageMessage, KuhnGameLobbyStageError, \
     KuhnGameLobbyStageCardDeal
+
 from django_grpc_framework.services import Service
 from coordinator.models import Game, Player, GameTypes
 from coordinator.utilities.card import Card
 from proto.game import game_pb2
+from django.conf import settings
 
 
 class GameCoordinatorService(Service):
@@ -124,9 +126,8 @@ class GameCoordinatorService(Service):
                         if lobby.is_finished() and player_channel.empty():
                             lobby.get_logger().error(f'Lobby has been finished while waiting for response from player.')
                             return
-
                 if isinstance(response, KuhnGameLobbyStageCardDeal):
-                    state = f'CARD:{response.turn_order}:{response.card}'
+                    state = f'CARD:{response.turn_order}:{response.card}' if settings.LOBBY_REVEAL_CARDS else f'CARD:{response.turn_order}:?'
                     actions = response.actions
                     card_image = Card(response.card).get_image().tobytes('raw')
                     yield game_pb2.PlayGameResponse(state = state, available_actions = actions, card_image = card_image)
