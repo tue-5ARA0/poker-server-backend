@@ -167,6 +167,7 @@ class GameCoordinatorService(Service):
 
     @staticmethod
     def create_game_lobby_instance(game_id: str) -> KuhnGameLobby:
+        game_id = str(game_id)
         lobby = None
         with GameCoordinatorService.games_lock:
             game_lobbies = list(filter(lambda game: game.game_id == game_id, GameCoordinatorService.game_lobbies))

@@ -14,18 +14,22 @@ class GameActionsLogger(object):
         self._warn = warn
         self._error = error
         self._write_to_database = write_to_database
+        self._is_disabled = False
 
     def info(self, content):
-        print(f'[{self.now()}][INFO] {content}', file = self._info)
-        self.write_to_database(GameLogTypes.INFO, content)
+        if not self._is_disabled:
+            print(f'[{self.now()}][INFO] {content}', file = self._info)
+            self.write_to_database(GameLogTypes.INFO, content)
 
     def warn(self, content):
-        print(f'[{self.now()}][INFO] {content}', file = self._warn)
-        self.write_to_database(GameLogTypes.WARN, content)
+        if not self._is_disabled:
+            print(f'[{self.now()}][INFO] {content}', file = self._warn)
+            self.write_to_database(GameLogTypes.WARN, content)
 
     def error(self, content):
-        print(f'[{self.now()}][ERROR] {content}', file = self._error)
-        self.write_to_database(GameLogTypes.ERROR, content)
+        if not self._is_disabled:
+            print(f'[{self.now()}][ERROR] {content}', file = self._error)
+            self.write_to_database(GameLogTypes.ERROR, content)
 
     def index(self):
         self._index = self._index + 1
