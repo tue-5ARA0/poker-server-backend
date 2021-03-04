@@ -20,10 +20,12 @@ migrate.sh
 
 You can now start a local server instance:
 ```
-python manage.py grpcrunserver --dev --settings=coonfigurations.dev.settings
+python manage.py grpcrunserver --dev --settings=configurations.dev.settings
 ```
 
-# Public Docker image
+Server by default will create 2 test player's tokens and will print it at startup. 
+
+# Public Docker image (Advanced)
 
 It is also possible to run local server instance with Docker. 
 If you have Docker and Docker Compose installed on your machine use the following command to start local server:

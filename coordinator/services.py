@@ -11,10 +11,6 @@ from coordinator.utilities.card import Card
 from proto.game import game_pb2
 
 
-def PlayGRPCTerminationCallback():
-    print('ended')
-
-
 class GameCoordinatorService(Service):
     game_lobbies = []
     games_lock = threading.Lock()
@@ -78,14 +74,14 @@ class GameCoordinatorService(Service):
         game_id = metadata['game_id']
         lobby = GameCoordinatorService.create_game_lobby_instance(game_id)
 
-        print(f'[INFO]: Player \'{token}\' is trying to connect to lobby \'{lobby.game_id}\'')
+        lobby.get_logger().info(f'Player {token} is trying to connect to the lobby')
 
         callback_active = True
 
         def GRPCConnectionTerminationCallback():
             if callback_active:
                 if lobby.is_player_registered(token) and not lobby.is_finished():
-                    print(f'ERROR: Lobby \'{game_id}\' terminated before its finished')
+                    lobby.get_logger().error(f'Lobby has been terminated before its finished')
                     lobby.finish(error = f'Lobby terminated before its finished. Another player possible '
                                          f'has disconnected from the game due to exception.')
                     GameCoordinatorService.remove_game_lobby_instance(game_id)
@@ -98,7 +94,8 @@ class GameCoordinatorService(Service):
             game_db = Game.objects.get(id = game_id)
 
             if game_db.is_finished:
-                raise Exception('Game is finished')
+                lobby.get_logger().error(f'Game has been finished already')
+                raise Exception('Game has been finished already')
 
             # First connected player creates a game coordinator
             # Second connected player does not create a new game coordinator, but reuses the same one
@@ -125,7 +122,7 @@ class GameCoordinatorService(Service):
                         response = player_channel.get(timeout = 1)
                     except queue.Empty:
                         if lobby.is_finished() and player_channel.empty():
-                            print(f'Error: Lobby \'{game_id}\' has been finished while waiting for response from player.')
+                            lobby.get_logger().error(f'Lobby has been finished while waiting for response from player.')
                             return
 
                 if isinstance(response, KuhnGameLobbyStageCardDeal):
@@ -147,18 +144,24 @@ class GameCoordinatorService(Service):
                     lobby.finish(error = response.error)
                     break
 
+            callback_active = False
+
             if lobby.is_player_registered(token):
                 GameCoordinatorService.remove_game_lobby_instance(game_id)
 
         except KuhnGameLobby.GameLobbyFullError:
+            lobby.get_logger().error(f'Connection error. Game lobby is full.')
             yield game_pb2.PlayGameResponse(state = f'ERROR: Game lobby is full', available_actions = [])
         except KuhnGameLobby.PlayerAlreadyExistError:
+            lobby.get_logger().error(f'Connection error. Player with the same id is already exist in this lobby')
             yield game_pb2.PlayGameResponse(state = f'ERROR: Player with the same id is already exist in this lobby',
                                             available_actions = [])
         except Exception as e:
-            yield game_pb2.PlayGameResponse(state = f'ERROR: {e}', available_actions = [])
-            if lobby.is_player_registered(token):
-                GameCoordinatorService.remove_game_lobby_instance(game_id)
+            if len(str(e)) != 0:
+                lobby.get_logger().error(f'Connection error. Unhandled exception: {e}')
+                yield game_pb2.PlayGameResponse(state = f'ERROR: {e}', available_actions = [])
+                if lobby.is_player_registered(token):
+                    GameCoordinatorService.remove_game_lobby_instance(game_id)
 
         callback_active = False
 
@@ -170,6 +173,7 @@ class GameCoordinatorService(Service):
             if len(game_lobbies) == 0:
                 lobby = KuhnGameLobby(game_id)
                 GameCoordinatorService.game_lobbies.append(lobby)
+                lobby.get_logger().info(f'Lobby {game_id} has been added to GameCoordinatorService')
             else:
                 lobby = game_lobbies[0]
         return lobby

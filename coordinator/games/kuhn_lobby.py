@@ -7,6 +7,7 @@ from typing import List, Union
 from coordinator.games.kuhn_game import KuhnRootChanceGameState
 from coordinator.games.kuhn_constants import CARDS_DEALINGS
 from coordinator.models import Game
+from coordinator.utilities.logger import GameActionsLogger
 
 
 class KuhnGameLobbyStageCardDeal(object):
@@ -16,6 +17,9 @@ class KuhnGameLobbyStageCardDeal(object):
         self.turn_order = turn_order
         self.actions = actions
 
+    def __str__(self):
+        return f'message(card = {self.card}, order = {self.turn_order}, actions = {self.actions})'
+
 
 class KuhnGameLobbyStageMessage(object):
 
@@ -23,11 +27,17 @@ class KuhnGameLobbyStageMessage(object):
         self.state = state
         self.actions = actions
 
+    def __str__(self):
+        return f'message(state = {self.state}, actions = {self.actions})'
+
 
 class KuhnGameLobbyStageError(object):
 
     def __init__(self, error):
         self.error = error
+
+    def __str__(self):
+        return f'message(error = {self.error})'
 
 
 class KuhnGameLobbyPlayerMessage(object):
@@ -39,16 +49,19 @@ class KuhnGameLobbyPlayerMessage(object):
 
 class KuhnGameLobbyPlayer(object):
 
-    def __init__(self, player_id: str, bank: int):
+    def __init__(self, player_id: str, bank: int, lobby):
         self.player_id = player_id
         self.bank = bank
         self.channel = queue.Queue()
+        self.lobby = lobby
 
     def send_message(self, message: Union[KuhnGameLobbyStageMessage, KuhnGameLobbyStageCardDeal]):
         self.channel.put(message)
+        self.lobby.get_logger().info(f'Player {self.player_id} received {str(message)}')
 
     def send_error(self, error: KuhnGameLobbyStageError):
         self.channel.put(error)
+        self.lobby.get_logger().error(f'Player {self.player_id} received {str(error)}')
 
 
 class KuhnGameLobbyStage(object):
@@ -128,6 +141,7 @@ class KuhnGameLobby(object):
 
         self._players = {}
         self._player_opponent = {}
+        self._logger = GameActionsLogger(game_id)
 
     def get_players(self) -> List[KuhnGameLobbyPlayer]:
         return list(self._players.values())
@@ -159,6 +173,9 @@ class KuhnGameLobby(object):
     def get_outcomes(self) -> str:
         return '|'.join(list(map(lambda _round: f'{_round.stage.inf_set()}:{_round.evaluation}', self.rounds[0:-1])))
 
+    def get_logger(self):
+        return self._logger
+
     def start(self):
         # First player which hits this function starts a separate thread with a game coordinator
         # Ref: play_lobby(lobby)
@@ -167,6 +184,7 @@ class KuhnGameLobby(object):
                 self._lobby_coordinator_thread = threading.Thread(target = game_lobby_coordinator,
                                                                   args = (self, KuhnGameLobby.MessagesTimeout))
                 self._lobby_coordinator_thread.start()
+                self._logger.info('Lobby coordinator thread has been created')
 
     def is_player_registered(self, player_id: str) -> bool:
         return player_id in self.get_player_ids()
@@ -181,7 +199,8 @@ class KuhnGameLobby(object):
                 raise KuhnGameLobby.PlayerAlreadyExistError('Player with the same id is already exist in this lobby')
 
             # For each player we create a separate channel for messages between game coordinator and player
-            self._players[player_id] = KuhnGameLobbyPlayer(player_id, bank = KuhnGameLobby.InitialBank)
+            self._players[player_id] = KuhnGameLobbyPlayer(player_id, bank = KuhnGameLobby.InitialBank, lobby = self)
+            self._logger.info(f'Player {player_id} has been registered in the lobby')
 
             if self.get_num_players() == 1:
                 player_ids = self.get_player_ids()
@@ -205,11 +224,13 @@ class KuhnGameLobby(object):
                 game_db.player_2 = player2_id
                 game_db.is_started = True
                 game_db.save(update_fields = ['player_1', 'player_2', 'is_started'])
+                self._logger.info(f'The game has been started')
 
     def wait_for_players(self):
         try:
             self._player_connection_barrier.wait(timeout = 120)
         except threading.BrokenBarrierError:
+            self._logger.error('Timeout waiting for another player to connect')
             raise Exception('Timeout waiting for another player to connect')
 
     def get_last_round(self):
@@ -224,8 +245,10 @@ class KuhnGameLobby(object):
             _first_player = self.get_player_opponent(last_round.first_player) if last_round is not None else None
             _round = KuhnGameRound(self, first_player = _first_player)
             self.rounds.append(_round)
+            self._logger.info(f'A new round has been created. First player is {_first_player}')
             return _round
         else:
+            self._logger.error('It is not allowed to start a new round while previous one is not completed')
             raise Exception('It is not allowed to start a new round while previous one is not completed')
 
     def start_new_round(self, player_id):
@@ -233,12 +256,14 @@ class KuhnGameLobby(object):
         # If player repeatedly sends 'START' messages this function won't do anything until a new round is created
         last_round = self.get_last_round()
 
-        # Check if player already started this round and exit if it is ture
+        # Check if player already started this round and exit if it is true
         if player_id in last_round.started and last_round.started[player_id] is True:
             return
 
         player = self.get_player(player_id)
         last_round.started[player_id] = True
+
+        self._logger.info(f'{player_id} accepted a new round')
 
         # First player (last_round.player_id_turn) starts the round so it receives a proper list of available actions
         # Second player just waits
@@ -269,6 +294,8 @@ class KuhnGameLobby(object):
 
             last_round.evaluation = evaluation
             last_round.is_evaluated = True
+
+            self._logger.info(f'Round has been evaluated. Banks: {list(map(lambda p: p.bank, self.get_players()))}')
 
     def convert_evaluation(self, evaluation, player_id):
         with self.lock:
@@ -306,14 +333,17 @@ class KuhnGameLobby(object):
                         game_db.winner_id = self.get_winner_id()
                         game_db.outcome = self.get_outcomes()
                         game_db.save(update_fields = ['is_finished', 'winner_id', 'outcome'])
+                        self._logger.info(f'The game has been finished.')
                     else:
                         game_db.is_failed = True
                         game_db.error = error
                         game_db.save(update_fields = ['is_failed', 'error'])
                         for player in self.get_players():
                             player.send_error(KuhnGameLobbyStageError(error))
+                        self._logger.error(f'The game has been finished with an error. Error: {error}')
                         self._lobby_coordinator_thread._stop()
                 except Exception as e:
+                    self._logger.error(f'Unexpected error. Error: {e}')
                     print("Unexpected error: ", e)
 
     def is_finished(self) -> bool:
@@ -342,6 +372,7 @@ def game_lobby_coordinator(lobby: KuhnGameLobby, messages_timeout: int):
             try:
                 # Game coordinator waits for a message from any player
                 message = lobby.channel.get(timeout = messages_timeout)
+                lobby.get_logger().info(f'Received message from player {message.player_id}: {message.action}')
 
                 # First we check if the message is about to start a new round
                 # It is possible for a player to send multiple 'START' actions for a single round, but they won't have any effect
@@ -349,9 +380,9 @@ def game_lobby_coordinator(lobby: KuhnGameLobby, messages_timeout: int):
                     if lobby.check_players_bank():
                         lobby.start_new_round(message.player_id)
                     else:
+                        lobby.finish()
                         for player in lobby.get_players():
                             player.send_message(KuhnGameLobbyStageMessage(lobby.player_outcome(player.player_id), []))
-                        lobby.finish()
                 # If message action is not 'START' we check that the message came from a player and assume it is their next action
                 elif message.player_id == current_round.player_id_turn:
                     # We register current player's action in an inner stage object
