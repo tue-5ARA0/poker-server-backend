@@ -24,6 +24,22 @@ python manage.py grpcrunserver --dev --settings=configurations.dev.settings
 ```
 
 Server by default will create 2 test player's tokens and will print it at startup. 
+Here is an output example of 2 test players with `da1ff3c4-69c7-44a9-a217-8ec6c746d875` and 
+`8b06fe61-e581-4ef7-b382-6916345052f6` tokens.
+
+```
+...
+Player test@test: da1ff3c4-69c7-44a9-a217-8ec6c746d875
+Player test@test: 8b06fe61-e581-4ef7-b382-6916345052f6
+...
+```
+
+Once the local server has been started you can use client application to play games with test tokens locally:
+
+```
+# Example for client application
+python main.py --token 'da1ff3c4-69c7-44a9-a217-8ec6c746d875'
+```
 
 # Public Docker image (Advanced)
 
@@ -34,4 +50,5 @@ If you have Docker and Docker Compose installed on your machine use the followin
 docker-compose up
 ```
 
+Note: you may need to run `docker-compose up` twice for the first time to properly generate server database layout.
   
