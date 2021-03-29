@@ -90,8 +90,10 @@ class KuhnGameLobbyStage(object):
     def inf_set(self):
         _inf_set = self._stage.inf_set()
         _, cards, *moves = _inf_set.split('.')
-        # We return showdown only in case of last action was CALL
-        _cards = cards if moves[-1] == 'CALL' else '??'
+        # We return showdown only in case if last action was CALL or both actions was 'CHECK'
+        _cards = '??'
+        if (moves[-1] == 'CALL') or (moves == ['CHECK', 'CHECK']):
+            _cards = cards
         return f'{_}.{_cards}.{".".join(moves)}'  # self._stage.inf_set()
 
     def secret_inf_set(self):
