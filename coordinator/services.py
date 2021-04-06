@@ -24,7 +24,7 @@ class GameCoordinatorService(Service):
         if player.is_disabled:
             raise Exception(f'User is disabled')
 
-        new_game = Game(created_by = player.token, game_type = GameTypes.PLAYER_PLAYER)
+        new_game = Game(created_by = player.token, game_type = GameTypes.PLAYER_PLAYER, is_private = True)
         instance = GameCoordinatorService.create_game_lobby_instance(new_game.id)
         if instance is not None:
             new_game.save()
@@ -40,9 +40,9 @@ class GameCoordinatorService(Service):
             raise Exception(f'User is disabled')
 
         game_candidates = Game.objects.filter(game_type = GameTypes.PLAYER_PLAYER, is_started = False,
-                                              is_failed = False, is_finished = False)
+                                              is_failed = False, is_finished = False, is_private = False)
         if len(game_candidates) == 0:
-            new_game = Game(created_by = player.token, game_type = GameTypes.PLAYER_PLAYER)
+            new_game = Game(created_by = player.token, game_type = GameTypes.PLAYER_PLAYER, is_private = False)
             instance = GameCoordinatorService.create_game_lobby_instance(new_game.id)
             if instance is not None:
                 new_game.save()

@@ -86,6 +86,7 @@ class Game(models.Model):
     is_started = models.BooleanField(null = False, default = False)
     is_finished = models.BooleanField(null = False, default = False)
     is_failed = models.BooleanField(null = False, default = False)
+    is_private = models.BooleanField(null = False, default = False)
     error = models.TextField(null = True)
     created_by = models.UUIDField(null = False)
     created_at = models.DateTimeField(auto_now_add = True)
@@ -97,11 +98,10 @@ class Game(models.Model):
 
 
 class GameAdmin(admin.ModelAdmin):
-    list_display = ('id', 'is_started', 'is_finished', 'is_failed', 'created_at', 'player_1', 'player_2',
-                    'winner_id', 'game_type')
-    list_filter = ('is_started', 'is_finished', 'is_failed', 'player_1', 'player_2', 'winner_id', 'game_type')
+    list_display = ('id', 'is_started', 'is_finished', 'is_failed', 'is_private', 'created_at', 'player_1', 'player_2', 'winner_id', 'game_type')
+    list_filter = ('is_started', 'is_finished', 'is_failed', 'is_private', 'player_1', 'player_2', 'winner_id', 'game_type')
 
-    readonly_fields = ('is_started', 'is_finished', 'is_failed',
+    readonly_fields = ('is_started', 'is_finished', 'is_failed', 'is_private',
                        'error', 'created_by', 'created_at', 'player_1', 'player_2', 'outcome',
                        'winner_id', 'game_type')
 
