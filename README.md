@@ -7,12 +7,21 @@ This repository contains the server-side implementation for the PokerBot group p
 
 _Setup the Virtual Environment_
 
-Open a new terminal in VSCode and create a new virtual environment by typing `conda env create -f environment.yml`. This command will create a `pokerbot39` virtual environment, if not already created by the client repository. For consistency, the client and server backend will use the same virtual environment. Activate the environment by `conda activate pokerbot39`.
+Open a new terminal in VSCode and create a new virtual environment by typing `conda env create -f environment.yml`. This command will create a `pokerbot39` virtual environment, if it was not already created when setting up the client repository. For consistency, the client and server backend will use the same virtual environment. Activate the environment by `conda activate pokerbot39`.
+
+_Install the Django web framework_
+Django is a webdevelopment framework for Python, and needs to be installed using pip. All requirements for Django are listed in `requirements.txt` and can be installed by typing:
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
 
 _Generate the Game Protocol_
 
-Generate the game protocol by typing `.\generate-proto.sh`. This will setup protocols for the agent to interact with a (local) game server.
-
+Generate the game protocol by typing `.\generate-proto.sh`. This will setup protocols for the agent to interact with a (local) game server. After generating the protocol, migrate the changes:
+```bash
+python manage.py migrate
+```
 
 _Start a Local Server_
 
