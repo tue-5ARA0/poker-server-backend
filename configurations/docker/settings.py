@@ -44,8 +44,8 @@ KUHN_GAME_INITIAL_BANK = 5
 KUHN_ALLOW_BOTS = True
 KUHN_BOT_FOLDER = './bots'
 
-BACKEND_GITHUB_URL = 'https://github.com/tue-5ARA0-2021-Q3/poker-server-backend'
-CLIENT_GITHUB_URL  = 'https://github.com/tue-5ARA0-2021-Q3/poker-server-client'
+BACKEND_GITHUB_URL = 'https://github.com/tue-5ARA0/poker-server-backend'
+CLIENT_GITHUB_URL  = 'https://github.com/tue-5ARA0-2022-Q1/poker-server-client'
 
 LOGGING = {
     'version': 1,
