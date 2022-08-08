@@ -17,7 +17,7 @@ pip install -r requirements.txt
 
 _Generate the Game Protocol_
 
-Generate the game protocol by typing `.\generate-proto.sh`. This will setup protocols for the agent to interact with a (local) game server. After generating the protocol, migrate the changes through`.\migrate.sh`.
+Generate the game protocol by typing `.\generate-proto.sh`. This will setup protocols for the agent to interact with a (local) game server. After generating the protocol, migrate the changes through `.\migrate.sh`.
 
 
 _Start a Local Server_
@@ -38,7 +38,7 @@ These tokens can be used for local clients to connect, see the `poker-server-cli
 
 ## Custom Bot Players
 
-The server backend allows your agent to play against a bot, but the implemented bot is not so clever - it is just an agent that plays random moves. To add a new bot create a subfolder in the `bots` directory with a clever agent implementation.
+The server backend allows your agent to play against a bot on the server-side, but the implemented bot is not so clever - it is just an agent that plays random moves. To add a new bot create a subfolder in the `bots` directory with a clever agent implementation.
 
 
 <!-- ## Docker Desktop
