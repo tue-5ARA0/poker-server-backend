@@ -20,7 +20,31 @@
             </div>
 
         {% else %}
+            {% if tournament.coordinator.is_failed %}
+            <div class="ui negative message">
+                <div class="header">
+                  The tournament has failed with the folowing error
+                </div>
+                <p>{{ tournament.coordinator.error }}
+              </p>
+            </div>
+            {% else %}
             <div class="ui center aligned grid">
+            {% if rounds|length == 0 %}
+            <div class="ui one column row">
+                <div class="ui column">
+                <div class="ui horizontal divider">
+                    Waiting for players to connect (&nbsp;{{ registrations|length }}&nbsp;/&nbsp;{{ tournament.capacity }}&nbsp;)
+                </div>
+                </div>
+                {% for registration in registrations %}
+                    {% if registration.player != None %} 
+                        {% if registration.player.group != 0 %}(Group {{ registration.player.group }})&nbsp;{% endif %}
+                        {{ registration.player.name }} 
+                    {% endif %}
+                {% endfor %}
+            </div> 
+            {% endif %}
             {% for round in rounds %}
                 <div class="ui one column row">
                     <div class="ui column">
@@ -51,24 +75,33 @@
                             <div class="ui attached {% if bracket.game.game.winner == bracket.game.game.player1 %} success {% else %} error {% endif %} message">
                                 {% comment %} <i class="chess queen icon"></i> {% endcomment %}
                                 {% if bracket.game.game.player1.group != 0 %}(Group {{ bracket.game.game.player1.group }})&nbsp;{% endif %}
-                                {% if bracket.game.game.player1.is_bot %}(Bot)&nbsp;{% endif %}
                                 {{ bracket.game.game.player1.name }}
                             </div>
                             <div class="ui bottom attached {% if bracket.game.game.winner == bracket.game.game.player2 %} success {% else %} error {% endif %} message">
                                 {% comment %} <i class="chess queen icon"></i> {% endcomment %}
                                 {% if bracket.game.game.player2.group != 0 %}(Group {{ bracket.game.game.player2.group }})&nbsp;{% endif %}
-                                {% if bracket.game.game.player2.is_bot %}(Bot)&nbsp;{% endif %}
                                 {{ bracket.game.game.player2.name }}
                             </div>
                             {% comment %} <a href="/game/{{ bracket.game.game.id }}">Logs</a> {% endcomment %}
                         {% else %}
+                           
                             <div class="ui attached message">
                                 {% comment %} <i class="chess queen icon"></i> {% endcomment %}
+                                {% if bracket.bracket_item != None and bracket.bracket_item.player1 != None %}
+                                {% if bracket.bracket_item.player1.group != 0 %}(Group {{ bracket.bracket_item.player1.group }})&nbsp;{% endif %}
+                                {{ bracket.bracket_item.player1.name }}
+                                {% else %}
                                 TBA
+                                {% endif %}
                             </div>
                             <div class="ui attached message">
                                 {% comment %} <i class="chess queen icon"></i> {% endcomment %}
+                                {% if bracket.bracket_item != None and bracket.bracket_item.player2 != None %}
+                                {% if bracket.bracket_item.player2.group != 0 %}(Group {{ bracket.bracket_item.player2.group }})&nbsp;{% endif %}
+                                {{ bracket.bracket_item.player2.name }}
+                                {% else %}
                                 TBA
+                                {% endif %}
                             </div>
                         {% endif %}
                     </div>
@@ -77,7 +110,7 @@
                 </div>
             {% endfor %}
             </div>
-
+            {% endif %}
         {% endif %}
     </div>
 {% endblock content %}

@@ -1,6 +1,6 @@
 
 from django.shortcuts import render
-from coordinator.models import Game, GameCoordinatorTypes, GameRound, Player, RoomRegistration, Tournament, TournamentRound, TournamentRoundBracketItem, TournamentRoundGame
+from coordinator.models import Game, GameCoordinatorTypes, GameRound, Player, RoomRegistration, Tournament, TournamentRound, TournamentRoundBracketItem, TournamentRoundGame, WaitingRoom
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.conf import settings
@@ -132,6 +132,9 @@ def tournament_view(request, *args, **kwargs):
         if tournament == None:
             raise ValueError()            
 
+        waiting_room  = WaitingRoom.objects.get(coordinator__id = tournament.coordinator.id)
+        registrations = RoomRegistration.objects.filter(room__id = waiting_room.id)
+
         rounds = sorted(list(TournamentRound.objects.filter(tournament__id = tournament.id)), key = lambda d: d.index)
 
         def fetch_rounds_data(round):
@@ -147,10 +150,13 @@ def tournament_view(request, *args, **kwargs):
         except Exception:
             pass
 
+
+
         return render(request, "tournament.html", {
             'tournament_found': True,
             'tournament': tournament,
             'rounds': rounds_data,
+            'registrations': registrations
         })
     except Exception as e:
         return render(request, "tournament.html", { 'tournament_found': False })
