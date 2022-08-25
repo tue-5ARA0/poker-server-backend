@@ -49,9 +49,9 @@ class KuhnGame(object):
             disconnected_before_game = self.check_any_disconnected()
 
             if disconnected_before_game != None:
-                self.logger.warning(f'Kuhn game { self.id } finished immediately. One player has disconnected before game has started.')
+                self.logger.warning(f'Kuhn game { self.id } finished immediately. One player has disconnected before the game has started.')
                 self.force_winner(self.get_player_opponent(disconnected_before_game.player_token).player_token)
-                self.finish()
+                self.finish(error = "One player has disconnected before the game has started.")
             else:
                 # First both players receive an instruction to start a new game
                 for player in self.get_players():
