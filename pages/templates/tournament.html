@@ -40,7 +40,7 @@
                 {% for registration in registrations %}
                     {% if registration.player != None %} 
                         {% if registration.player.group != 0 %}(Group {{ registration.player.group }})&nbsp;{% endif %}
-                        {{ registration.player.name }} 
+                        {{ registration.player.name }} <br>
                     {% endif %}
                 {% endfor %}
             </div> 
