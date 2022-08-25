@@ -1,4 +1,5 @@
 import random
+import time
 
 from client.state import ClientGameRoundState, ClientGameState
 
@@ -9,6 +10,7 @@ class PokerAgent(object):
         pass
 
     def make_action(self, state: ClientGameState, round: ClientGameRoundState) -> str:
+        time.sleep(random.choice([ 0.25, 0.5, 0.75 ])) # Simulate bot's complex computations
         return random.choice(round.get_available_actions())
 
     def on_image(self, image):
