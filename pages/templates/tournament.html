@@ -45,6 +45,15 @@
                 {% endfor %}
             </div> 
             {% endif %}
+            {% if tournament.place1 != None %}
+            <h1 class="ui icon header">
+                <i class="chess queen icon"></i>
+                <div class="content">
+                  {{ tournament.place1.name }}
+                  <div class="sub header">Meet your winner!</div>
+                </div>
+            </h1>
+            {% endif %}
             {% for round in rounds %}
                 <div class="ui one column row">
                     <div class="ui column">
