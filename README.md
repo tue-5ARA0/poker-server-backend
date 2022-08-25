@@ -34,6 +34,8 @@ Test player token: f9265243-b208-48b4-9cb9-7a865b6baaed
 ```
 These tokens can be used for local clients to connect, see the `poker-server-client` readme.
 
+You are free to inspect and modify parameters from the `./configurations/dev/settings.py` file. 
+Note, however, that settings on the public cloud-based server are hidden from you and you will not know the exact values of those parameters.
 
 ## Custom Bot Players
 

@@ -11,8 +11,8 @@ GENERATE_TEST_PLAYERS = 4
 GENERATE_BOT_PLAYERS = 16
 
 CARD_GENERATED_IMAGE_SIZE = 32
-CARD_GENERATED_IMAGE_NOISE_LEVEL = 0.15
-CARD_GENERATED_IMAGE_ROTATE_MAX_ANGLE = 15
+CARD_GENERATED_IMAGE_NOISE_LEVEL = 0.15    # to change on the production server
+CARD_GENERATED_IMAGE_ROTATE_MAX_ANGLE = 15 # to change on the production server
 
 COORDINATOR_REVEAL_CARDS = False
 
@@ -33,7 +33,7 @@ COORDINATOR_WAITING_TIMEOUT = 5  # 5 sec
 # This option configures timeout for a waiting room connection
 COORDINATOR_CONNECTION_TIMEOUT = 100  # 100 sec
 
-# This is a secret password to create tournaments, change on the production server
+# This is a secret password to create tournaments, to change on the production server
 COORDINATOR_TOURNAMENTS_SECRET = 'qwerty'
 
 COORDINATOR_REMOVE_CLOSED_COORDINATORS_INTERVAL = 10 # 10 sec
