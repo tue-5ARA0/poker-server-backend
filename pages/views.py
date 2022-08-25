@@ -140,7 +140,12 @@ def tournament_view(request, *args, **kwargs):
             brackets      = list(map(lambda tuple: { 'bracket_item': tuple[0], 'game': tuple[1] }, zip(bracket_items, games)))
             return { 'round': round, 'brackets': brackets }
 
-        rounds_data = list(map(fetch_rounds_data, rounds))
+        rounds_data = [] 
+        try:
+            for round in rounds:
+                rounds_data.append(fetch_rounds_data(round))
+        except Exception:
+            pass
 
         return render(request, "tournament.html", {
             'tournament_found': True,
