@@ -23,7 +23,7 @@ COORDINATOR_TOURNAMENT_GRACE_PERIOD = 0 # sec
 # This settings control for how long GRPC service should wait for a coordinator to be ready
 # Normally if coordinator does not send ready event then something wrong is going on on server side
 # We do not expect to hit this timeout setting, so we set it larger than the others
-COORDINATOR_READY_TIMEOUT = 100 # 100 sec
+COORDINATOR_READY_TIMEOUT = 3600 # 1 hour
 
 # Normally `KuhnCoordinator` needs to register each coordinator in a global dictionary
 # We do not expect to hit this timeout setting, so we set it larger than the others
@@ -31,6 +31,9 @@ COORDINATOR_REGISTERED_TIMEOUT = 100 # 100 sec
 
 # This option configures timeout for an agent to make an action
 COORDINATOR_WAITING_TIMEOUT = 5  # 5 sec
+
+# This options configures timeout for a server to process individual messages from players
+COORDINATOR_DELAY_PROCESSING = 0.1
 
 # This option configures timeout for a waiting room connection
 COORDINATOR_CONNECTION_TIMEOUT = 100  # 100 sec

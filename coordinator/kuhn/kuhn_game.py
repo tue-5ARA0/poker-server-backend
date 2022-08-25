@@ -16,6 +16,7 @@ from coordinator.models import Game, GameRound
 class KuhnGame(object):
     InitialBank     = settings.KUHN_GAME_INITIAL_BANK
     MessagesTimeout = settings.COORDINATOR_WAITING_TIMEOUT
+    DelayProcessing = settings.COORDINATOR_DELAY_PROCESSING
 
     def __init__(self, coordinator, player1: KuhnGameLobbyPlayer, player2: KuhnGameLobbyPlayer, game_type: int, channel: queue.Queue):
 
@@ -163,6 +164,8 @@ class KuhnGame(object):
                         if self.is_finished():
                             break
                         raise Exception(f'There was no message from player for more than { KuhnGame.MessagesTimeout } sec.')
+
+                    time.sleep(KuhnGame.DelayProcessing)
 
         except Exception as e:
             traceback.print_exc()
