@@ -28,7 +28,7 @@
                 <p>{{ tournament.coordinator.error }}
               </p>
             </div>
-            {% else %}
+            {% endif %}
             <div class="ui center aligned grid">
             {% if rounds|length == 0 %}
             <div class="ui one column row">
@@ -111,6 +111,5 @@
             {% endfor %}
             </div>
             {% endif %}
-        {% endif %}
     </div>
 {% endblock content %}

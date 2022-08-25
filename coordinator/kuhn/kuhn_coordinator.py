@@ -106,9 +106,14 @@ class KuhnCoordinator(object):
         with self.lock:
             return self.closed.is_set()
 
-    def close(self, error = None):
+    def close(self, error = None, force = False):
         with self.lock:
-            if not self.is_closed():
+            # Tournament games may attempt to close the coordinator if player has disconnected
+            # We close `tournament` coordinator only with the `force = True` flag
+            is_tournament = len(Tournament.objects.filter(coordinator__id = self.id)) != 0
+            if is_tournament and not force:
+                self.logger.warning('Coordinator attempted to close with error: {{ error }}. Skip error as force argument is `False`')
+            elif not self.is_closed():
                 if not self.is_ready():
                     self.mark_as_ready()
                 is_failed, error = (False, None) if error is None else (True, str(error))
@@ -338,6 +343,9 @@ class KuhnCoordinator(object):
                     else:
                         random_winner_token = random.choice(duel).token
                         winner = KuhnGameLobbyPlayer(random_winner_token, None, None)
+
+                # Update winner in case if someone failed and we chose the winner randomly
+                Game.objects.filter(id = self.id).update(winner = winner.player_token)
 
                 dbgame = TournamentRoundGame(bracket_item = dbbracket, game = Game.objects.get(id = game.id))
                 dbgame.save()
