@@ -50,10 +50,14 @@
                         {% if bracket.game != None %}
                             <div class="ui attached {% if bracket.game.game.winner == bracket.game.game.player1 %} success {% else %} error {% endif %} message">
                                 {% comment %} <i class="chess queen icon"></i> {% endcomment %}
+                                {% if bracket.game.game.player1.group != 0 %}(Group {{ bracket.game.game.player1.group }})&nbsp;{% endif %}
+                                {% if bracket.game.game.player1.is_bot %}(Bot)&nbsp;{% endif %}
                                 {{ bracket.game.game.player1.name }}
                             </div>
                             <div class="ui bottom attached {% if bracket.game.game.winner == bracket.game.game.player2 %} success {% else %} error {% endif %} message">
                                 {% comment %} <i class="chess queen icon"></i> {% endcomment %}
+                                {% if bracket.game.game.player2.group != 0 %}(Group {{ bracket.game.game.player2.group }})&nbsp;{% endif %}
+                                {% if bracket.game.game.player2.is_bot %}(Bot)&nbsp;{% endif %}
                                 {{ bracket.game.game.player2.name }}
                             </div>
                             {% comment %} <a href="/game/{{ bracket.game.game.id }}">Logs</a> {% endcomment %}

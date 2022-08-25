@@ -75,6 +75,7 @@ class Player(models.Model):
     token        = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     public_token = models.UUIDField(default = uuid.uuid4, editable = False, null = False)
     name         = models.CharField(max_length = 128, null = False, default = pick_random_username)
+    group        = models.IntegerField(null = False, editable = True, default = 0)
     is_disabled  = models.BooleanField(null = False, editable = True, default = False)
     is_test      = models.BooleanField(null = False, default = False)
     is_bot       = models.BooleanField(null = False, default = False)

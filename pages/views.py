@@ -89,6 +89,7 @@ def leaderboard_view(request, *args, **kwargs):
 
         stats = {
             'name': player.name,
+            'group': player.group,
             'games_total': len(games),
             'games_won': games_won,
             'games_lost': games_lost,
