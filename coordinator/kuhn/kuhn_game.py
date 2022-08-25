@@ -326,7 +326,7 @@ class KuhnGame(object):
                     KuhnCoordinatorEventTypes.CardDeal, 
                     card       = last_round.stage.card(1), 
                     turn_order = 2, 
-                    actions    = [ CoordinatorActions.AvailableActions ]
+                    actions    = [ CoordinatorActions.Wait ]
                 ))
 
     def evaluate_round(self):
