@@ -62,11 +62,16 @@
                                 Game {{ bracket.bracket_item.position }} of Round {{ round.round.index }}
                                 {% if bracket.game != None %}
                                     <div class="sub header">
-                                        <a href="/game/{{ bracket.game.game.id }}" rel="noopener">Game logs</a>
+                                        {% if bracket.game.game.error != None %}
+                                            <i class="ui orange exclamation triangle icon"></i>
+                                        {% endif %}
+                                        <a href="/game/{{ bracket.game.game.id }}" rel="noopener">
+                                            Game logs {% if bracket.bracket_item.active %}(currently active){% endif %}
+                                        </a>
                                     </div>
                                 {% else %}
                                     <div class="sub header">
-                                        <a>TBA</a>
+                                        <a>TBA {% if bracket.bracket_item.active %}(currently active){% endif %}</a>
                                     </div>
                                 {% endif %}
                               </div>

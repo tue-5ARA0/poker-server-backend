@@ -319,7 +319,9 @@ class KuhnCoordinator(object):
             # For each item in bracket we play a standard duel game and create a `TournamentRoundGame` database record at the end
             for duel, dbbracket in zip(bracket, dbbrackets):
                 self.logger.info(f'Starting a single duel within the tournament for coordinator { self.id }')
+                TournamentRoundBracketItem.objects.filter(id = dbbracket.id).update(active = True)
                 game, winner, unlucky = self.play_duel(duel)
+                TournamentRoundBracketItem.objects.filter(id = dbbracket.id).update(active = False)
                 self.logger.info(f'Ending a single duel within the tournament for coordinator { self.id }')
 
                 time.sleep(settings.COORDINATOR_TOURNAMENT_GRACE_PERIOD)

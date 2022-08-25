@@ -194,6 +194,7 @@ class TournamentRoundBracketItem(models.Model):
     round      = models.ForeignKey(TournamentRound, on_delete = models.CASCADE, null = False)
     player1    = models.ForeignKey(Player, on_delete = models.CASCADE, null = True, related_name = 'players_player1')
     player2    = models.ForeignKey(Player, on_delete = models.CASCADE, null = True, related_name = 'players_player2')
+    active     = models.BooleanField(null = False, default = False)
 
 class TournamentRoundGame(models.Model):
     id           = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
