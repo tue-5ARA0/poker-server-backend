@@ -255,7 +255,7 @@ class KuhnCoordinator(object):
              # Just in case we mark it as ready here again, does nothing if coordinator has been marked as ready at this moment
             self.mark_as_ready()
 
-    def play_duel(self, players: List[Player]): 
+    def play_duel(self, players: List[Player], on_game_callback = None): 
         if len(players) != 2:
             raise Exception(f'Invalid number of players in duel setup. len(players) = { len(players) }')
 
@@ -264,6 +264,9 @@ class KuhnCoordinator(object):
         player1 = KuhnGameLobbyPlayer(player_tokens[0], KuhnGame.InitialBank, self.waiting_room.get_player_channel(player_tokens[0]))
         player2 = KuhnGameLobbyPlayer(player_tokens[1], KuhnGame.InitialBank, self.waiting_room.get_player_channel(player_tokens[1]))
         game    = KuhnGame(self, player1, player2, self.game_type, self.channel)
+
+        if on_game_callback is not None:
+            on_game_callback(game)
 
         winner, unlucky = game.play()
 
@@ -320,7 +323,12 @@ class KuhnCoordinator(object):
             for duel, dbbracket in zip(bracket, dbbrackets):
                 self.logger.info(f'Starting a single duel within the tournament for coordinator { self.id }')
                 TournamentRoundBracketItem.objects.filter(id = dbbracket.id).update(active = True)
-                game, winner, unlucky = self.play_duel(duel)
+
+                def on_game_callback(game_):
+                    dbgame = TournamentRoundGame(bracket_item = dbbracket, game = Game.objects.get(id = game_.id))
+                    dbgame.save()
+
+                game, winner, unlucky = self.play_duel(duel, on_game_callback = on_game_callback)
                 TournamentRoundBracketItem.objects.filter(id = dbbracket.id).update(active = False)
                 self.logger.info(f'Ending a single duel within the tournament for coordinator { self.id }')
 
@@ -347,9 +355,6 @@ class KuhnCoordinator(object):
                         winner = KuhnGameLobbyPlayer(random_winner_token, None, None)
                         # Update winner in case if someone failed and we chose the winner randomly
                         Game.objects.filter(id = self.id).update(winner = random_winner_token)
-                
-                dbgame = TournamentRoundGame(bracket_item = dbbracket, game = Game.objects.get(id = game.id))
-                dbgame.save()
 
                 winners.append(winner)
 
