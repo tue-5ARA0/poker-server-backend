@@ -24,6 +24,15 @@
             </div>
 
         {% else %}
+        {% if game.error != None %}
+        <div class="ui negative message">
+            <div class="header">
+              The game has failed with the folowing error
+            </div>
+            <p>{{ game.error }}
+          </p>
+        </div>
+        {% endif %}
         <table class="ui fixed single line compact celled table">
             <thead>
             <tr>

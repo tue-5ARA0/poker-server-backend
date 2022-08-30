@@ -16,6 +16,7 @@ from coordinator.models import Game, GameRound
 class KuhnGame(object):
     InitialBank     = settings.KUHN_GAME_INITIAL_BANK
     MessagesTimeout = settings.COORDINATOR_WAITING_TIMEOUT
+    DelayProcessing = settings.COORDINATOR_DELAY_PROCESSING
 
     def __init__(self, coordinator, player1: KuhnGameLobbyPlayer, player2: KuhnGameLobbyPlayer, game_type: int, channel: queue.Queue):
 
@@ -48,9 +49,9 @@ class KuhnGame(object):
             disconnected_before_game = self.check_any_disconnected()
 
             if disconnected_before_game != None:
-                self.logger.warning(f'Kuhn game { self.id } finished immediately. One player has disconnected before game has started.')
+                self.logger.warning(f'Kuhn game { self.id } finished immediately. One player has disconnected before the game has started.')
                 self.force_winner(self.get_player_opponent(disconnected_before_game.player_token).player_token)
-                self.finish()
+                self.finish(error = "One player has disconnected before the game has started.")
             else:
                 # First both players receive an instruction to start a new game
                 for player in self.get_players():
@@ -163,6 +164,8 @@ class KuhnGame(object):
                         if self.is_finished():
                             break
                         raise Exception(f'There was no message from player for more than { KuhnGame.MessagesTimeout } sec.')
+
+                    time.sleep(KuhnGame.DelayProcessing)
 
         except Exception as e:
             traceback.print_exc()
@@ -326,7 +329,7 @@ class KuhnGame(object):
                     KuhnCoordinatorEventTypes.CardDeal, 
                     card       = last_round.stage.card(1), 
                     turn_order = 2, 
-                    actions    = [ CoordinatorActions.AvailableActions ]
+                    actions    = [ CoordinatorActions.Wait ]
                 ))
 
     def evaluate_round(self):

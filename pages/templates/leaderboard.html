@@ -16,7 +16,7 @@
         <tbody>
         {% for player in leaderboard %}
             <tr>
-                <td>{{ player.name }}</td>
+                <td>{% if player.group %}(Group {{ player.group }}) {% endif %}{{ player.name }}</td>
                 <td>{{ player.games_won }}</td>
                 <td>{{ player.games_lost }}</td>
                 <td>{{ player.games_total }}</td>

@@ -15,10 +15,9 @@ Django is a webdevelopment framework for Python, and needs to be installed using
 pip install -r requirements.txt
 ```
 
-_Generate the Game Protocol_
+_Initialise the Game Protocol and the Database_
 
-Generate the game protocol by typing `.\generate-proto.sh`. This will setup protocols for the agent to interact with a (local) game server. After generating the protocol, migrate the changes through `.\migrate.sh`.
-
+To generate the game protocol and the proper database layout simply run `python init.py`.
 
 _Start a Local Server_
 
@@ -35,6 +34,8 @@ Test player token: f9265243-b208-48b4-9cb9-7a865b6baaed
 ```
 These tokens can be used for local clients to connect, see the `poker-server-client` readme.
 
+You are free to inspect and modify parameters from the `./configurations/dev/settings.py` file. 
+Note, however, that settings on the public cloud-based server are hidden from you and you will not know the exact values of those parameters.
 
 ## Custom Bot Players
 

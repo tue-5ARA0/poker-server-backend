@@ -106,9 +106,14 @@ class KuhnCoordinator(object):
         with self.lock:
             return self.closed.is_set()
 
-    def close(self, error = None):
+    def close(self, error = None, force = False):
         with self.lock:
-            if not self.is_closed():
+            # Tournament games may attempt to close the coordinator if player has disconnected
+            # We close `tournament` coordinator only with the `force = True` flag
+            is_tournament = len(Tournament.objects.filter(coordinator__id = self.id)) != 0
+            if is_tournament and not force:
+                self.logger.warning('Coordinator attempted to close with error: {{ error }}. Skip error as force argument is `False`')
+            elif not self.is_closed():
                 if not self.is_ready():
                     self.mark_as_ready()
                 is_failed, error = (False, None) if error is None else (True, str(error))
@@ -250,7 +255,7 @@ class KuhnCoordinator(object):
              # Just in case we mark it as ready here again, does nothing if coordinator has been marked as ready at this moment
             self.mark_as_ready()
 
-    def play_duel(self, players: List[Player]): 
+    def play_duel(self, players: List[Player], on_game_callback = None): 
         if len(players) != 2:
             raise Exception(f'Invalid number of players in duel setup. len(players) = { len(players) }')
 
@@ -259,6 +264,9 @@ class KuhnCoordinator(object):
         player1 = KuhnGameLobbyPlayer(player_tokens[0], KuhnGame.InitialBank, self.waiting_room.get_player_channel(player_tokens[0]))
         player2 = KuhnGameLobbyPlayer(player_tokens[1], KuhnGame.InitialBank, self.waiting_room.get_player_channel(player_tokens[1]))
         game    = KuhnGame(self, player1, player2, self.game_type, self.channel)
+
+        if on_game_callback is not None:
+            on_game_callback(game)
 
         winner, unlucky = game.play()
 
@@ -314,7 +322,14 @@ class KuhnCoordinator(object):
             # For each item in bracket we play a standard duel game and create a `TournamentRoundGame` database record at the end
             for duel, dbbracket in zip(bracket, dbbrackets):
                 self.logger.info(f'Starting a single duel within the tournament for coordinator { self.id }')
-                game, winner, unlucky = self.play_duel(duel)
+                TournamentRoundBracketItem.objects.filter(id = dbbracket.id).update(active = True)
+
+                def on_game_callback(game_):
+                    dbgame = TournamentRoundGame(bracket_item = dbbracket, game = Game.objects.get(id = game_.id))
+                    dbgame.save()
+
+                game, winner, unlucky = self.play_duel(duel, on_game_callback = on_game_callback)
+                TournamentRoundBracketItem.objects.filter(id = dbbracket.id).update(active = False)
                 self.logger.info(f'Ending a single duel within the tournament for coordinator { self.id }')
 
                 time.sleep(settings.COORDINATOR_TOURNAMENT_GRACE_PERIOD)
@@ -330,7 +345,7 @@ class KuhnCoordinator(object):
                     except Exception:
                         pass
 
-                if winner == None or game.error != None:
+                if winner == None:
                     self.logger.warning('Unfinished game in the tournament with coordinator { self.id }. Choosing random winner.')
                     disconnected_player = game.check_any_disconnected()
                     if disconnected_player != None:
@@ -338,9 +353,8 @@ class KuhnCoordinator(object):
                     else:
                         random_winner_token = random.choice(duel).token
                         winner = KuhnGameLobbyPlayer(random_winner_token, None, None)
-
-                dbgame = TournamentRoundGame(bracket_item = dbbracket, game = Game.objects.get(id = game.id))
-                dbgame.save()
+                        # Update winner in case if someone failed and we chose the winner randomly
+                        Game.objects.filter(id = self.id).update(winner = random_winner_token)
 
                 winners.append(winner)
 

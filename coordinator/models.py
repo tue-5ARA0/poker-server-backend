@@ -75,6 +75,7 @@ class Player(models.Model):
     token        = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     public_token = models.UUIDField(default = uuid.uuid4, editable = False, null = False)
     name         = models.CharField(max_length = 128, null = False, default = pick_random_username)
+    group        = models.IntegerField(null = False, editable = True, default = 0)
     is_disabled  = models.BooleanField(null = False, editable = True, default = False)
     is_test      = models.BooleanField(null = False, default = False)
     is_bot       = models.BooleanField(null = False, default = False)
@@ -193,6 +194,7 @@ class TournamentRoundBracketItem(models.Model):
     round      = models.ForeignKey(TournamentRound, on_delete = models.CASCADE, null = False)
     player1    = models.ForeignKey(Player, on_delete = models.CASCADE, null = True, related_name = 'players_player1')
     player2    = models.ForeignKey(Player, on_delete = models.CASCADE, null = True, related_name = 'players_player2')
+    active     = models.BooleanField(null = False, default = False)
 
 class TournamentRoundGame(models.Model):
     id           = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
