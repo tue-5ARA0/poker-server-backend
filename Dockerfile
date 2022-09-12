@@ -24,7 +24,7 @@ RUN . /root/.bashrc && \
 RUN conda run -n pokerbot39 pip install --only-binary grpcio,grpcio-tools,matplotlib,protobuf -r requirements_linux.txt
 RUN conda run -n pokerbot39 pip install psycopg2
 
-RUN echo "source activate pokerbot39" > ~/.bashrc
+RUN echo "conda activate pokerbot39" > ~/.bashrc
 ENV PATH /opt/conda/envs/pokerbot39/bin:$PATH
 
 COPY . /code/
