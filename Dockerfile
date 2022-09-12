@@ -30,4 +30,5 @@ ENV PATH /opt/conda/envs/pokerbot39/bin:$PATH
 COPY . /code/
 
 RUN chmod +x docker-entrypoint.sh
+RUN python init.py
 
