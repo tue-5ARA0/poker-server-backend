@@ -13,7 +13,7 @@ services:
       - /bin/bash
       - -c
       - |
-        conda activate pokerbot39
+        ./docker-entrypoint.sh
         python manage.py makemigrations --settings=configurations.docker.settings
         python manage.py makemigrations coordinator --settings=configurations.docker.settings
         python manage.py migrate --run-syncdb --settings=configurations.docker.settings

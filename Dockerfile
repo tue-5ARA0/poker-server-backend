@@ -17,14 +17,17 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-py39_4.12.0-Linu
 
 ENV PATH=$CONDA_DIR/bin:$PATH
 
-RUN conda init bash
-RUN conda config --set remote_read_timeout_secs 1200.0
-RUN conda env create -f environment_linux.yml
-RUN conda activate pokerbot39
+RUN . /root/.bashrc && \
+    conda init bash && \
+    conda env create -f environment_linux.yml
 
-RUN pip install --only-binary grpcio,grpcio-tools,matplotlib,protobuf -r requirements_linux.txt
-RUN pip install psycopg2
+RUN conda run -n pokerbot39 pip install --only-binary grpcio,grpcio-tools,matplotlib,protobuf -r requirements_linux.txt
+RUN conda run -n pokerbot39 pip install psycopg2
+
+RUN echo "source activate pokerbot39" > ~/.bashrc
+ENV PATH /opt/conda/envs/pokerbot39/bin:$PATH
 
 COPY . /code/
 
-RUN python init.py
+RUN chmod +x docker-entrypoint.sh
+

@@ -52,4 +52,4 @@ docker-compose up
 
 Note, that first usage of this command is generally very slow as it requires to build a Docker image from scratch. Subsequent usages should reuse cached docker image and will execute much faster.
 
-<!-- You may need to run `docker-compose up` twice for the first time to properly generate the server database layout. -->
+You also need to run `docker-compose up` twice for the first time to properly generate the server database layout.
