@@ -11,9 +11,9 @@ services:
     build: .
     command: 
       - /bin/bash
+      - --login
       - -c
       - |
-        ./docker-entrypoint.sh
         python manage.py makemigrations --settings=configurations.docker.settings
         python manage.py makemigrations coordinator --settings=configurations.docker.settings
         python manage.py migrate --run-syncdb coordinator --settings=configurations.docker.settings
