@@ -291,6 +291,9 @@ class KuhnCoordinator(object):
 
     def play_tournament(self, players: List[Player]):
 
+        # Indicate that the tournament has started
+        Tournament.objects.get(coordinator__id = self.id).update(is_started = True)
+
         # First we create tournament bracket based on number of players
         dbtournament = Tournament.objects.get(coordinator__id = self.id)
 
