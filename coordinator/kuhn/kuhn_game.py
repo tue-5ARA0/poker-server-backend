@@ -93,7 +93,7 @@ class KuhnGame(object):
                             # Notify remaining player about the result of the game
                             opponent.send_message(KuhnCoordinatorMessage(KuhnCoordinatorEventTypes.OpponentDisconnected, actions = [ CoordinatorActions.Wait ]))
                             opponent.send_message(KuhnCoordinatorMessage(KuhnCoordinatorEventTypes.GameResult, game_result = self.player_outcome(opponent.player_token)))
-                            break
+                            continue
                         elif message.action == CoordinatorActions.ConfirmEndGame and self.is_finished():
                             game_end_confirmed = game_end_confirmed + 1
                             continue
