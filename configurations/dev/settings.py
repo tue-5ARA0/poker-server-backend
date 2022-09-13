@@ -16,7 +16,7 @@ CARD_GENERATED_IMAGE_ROTATE_MAX_ANGLE = 15 # to change on the production server
 
 COORDINATOR_REVEAL_CARDS = False
 
-COORDINATOR_TOURNAMENT_GRACE_PERIOD = 0 # sec
+COORDINATOR_TOURNAMENT_GRACE_PERIOD = 0.5 # sec
 
 # This settings control for how long GRPC service should wait for a coordinator to be ready
 # Normally if coordinator does not send ready event then something wrong is going on on server side
