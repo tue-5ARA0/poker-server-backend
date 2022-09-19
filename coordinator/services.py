@@ -398,7 +398,15 @@ class GameCoordinatorService(Service):
                 )
                 if len(public_coordinators) != 0:
                     coordinator = public_coordinators[0] # We pick first available public coordinator
-                    return GameCoordinatorService.coordinators[ str(coordinator.id) ] # Coordinator must exist in service internal dict
+                    # If we found some kind of broken coordinator which wasn't added to the `coordinators` list 
+                    # we remove it from the database and start again
+                    if not str(coordinator.id) in GameCoordinatorService.coordinators:
+                        GameCoordinatorService.logger.warn(f'Removing broken coordinator: { str(coordinator.id) }')
+                        GameCoordinator.objects.filter(id = coordinator.id).delete()
+                        return GameCoordinatorService.find_coordinator_instance(player, coordinator_id, game_type)
+                    else:
+                        # Coordinator must exist in service internal dict as we've checked it before
+                        return GameCoordinatorService.coordinators[ str(coordinator.id) ] 
                 else:
                     # In case if coordinator id was set to `random` and there were no games available at the moment we create a new one
                     return GameCoordinatorService.add_coordinator(KuhnCoordinator(

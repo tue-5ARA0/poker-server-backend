@@ -58,7 +58,9 @@ class CoordinatorConfig(AppConfig):
         grpc_thread.start()
 
         try:
+            from django.db import models
             from coordinator.models import Player 
+            from coordinator.models import GameCoordinator
             from coordinator.models import pick_random_botname
 
             if settings.GENERATE_TEST_PLAYERS > 0:
@@ -79,6 +81,17 @@ class CoordinatorConfig(AppConfig):
                     for _ in range(to_create):
                         bot_player = Player(name = pick_random_botname(), is_bot = True)
                         bot_player.save()
+
+            # Ensure that there are no "broken" coordinators in the database on startup
+            # That may happen if some disables the server mid-game
+            broken_coordinators = GameCoordinator.objects.filter(
+                models.Q(is_started = False) | models.Q(is_finished = False)
+            )
+
+            if len(broken_coordinators) != 0:
+                print(f'Removing broken coordinators from the database.')
+                broken_coordinators.delete()
+            
         except OperationalError:
             pass
         except Exception as e:

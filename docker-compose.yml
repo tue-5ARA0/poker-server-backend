@@ -13,8 +13,10 @@ services:
       - /bin/bash
       - -c
       - |
+        ./docker-entrypoint.sh
         python manage.py makemigrations --settings=configurations.docker.settings
         python manage.py makemigrations coordinator --settings=configurations.docker.settings
+        python manage.py migrate coordinator --settings=configurations.docker.settings
         python manage.py migrate --run-syncdb --settings=configurations.docker.settings
         python manage.py ensure_adminuser --settings=configurations.docker.settings --username=docker --email=docker@docker.com --password=docker
         python manage.py runserver 0.0.0.0:8000 --settings=configurations.docker.settings --noreload

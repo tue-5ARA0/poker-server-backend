@@ -291,6 +291,9 @@ class KuhnCoordinator(object):
 
     def play_tournament(self, players: List[Player]):
 
+        # Indicate that the tournament has started
+        Tournament.objects.get(coordinator__id = self.id).update(is_started = True)
+
         # First we create tournament bracket based on number of players
         dbtournament = Tournament.objects.get(coordinator__id = self.id)
 
@@ -319,6 +322,8 @@ class KuhnCoordinator(object):
             
             self.logger.info(f'Bracket has been created for round { round } of the tournament for coordinator { self.id }')
 
+            time.sleep(settings.COORDINATOR_TOURNAMENT_GRACE_PERIOD)
+
             # For each item in bracket we play a standard duel game and create a `TournamentRoundGame` database record at the end
             for duel, dbbracket in zip(bracket, dbbrackets):
                 self.logger.info(f'Starting a single duel within the tournament for coordinator { self.id }')
@@ -338,10 +343,6 @@ class KuhnCoordinator(object):
                     try:
                         message = self.channel.get(timeout = settings.COORDINATOR_WAITING_TIMEOUT)
                         self.logger.warning(f'Remaining message { message } after duel has ended')
-                        if self.waiting_room.is_registered(message.player_token) and not self.waiting_room.is_disconnected(message.player_token):
-                            maybe_waiting_player_channel = self.waiting_room.get_player_channel(message.player_token)
-                            maybe_waiting_player_channel.put(KuhnCoordinatorMessage(KuhnCoordinatorEventTypes.InvalidAction, actions = [ CoordinatorActions.Wait ]))
-                            maybe_waiting_player_channel.join()
                     except Exception:
                         pass
 
@@ -358,11 +359,16 @@ class KuhnCoordinator(object):
 
                 winners.append(winner)
 
+                time.sleep(settings.COORDINATOR_TOURNAMENT_GRACE_PERIOD)
+
             remaining_players = list(Player.objects.filter(token__in = list(map(lambda d: d.player_token, winners))))
 
             round = round + 1
 
+            time.sleep(settings.COORDINATOR_TOURNAMENT_GRACE_PERIOD)
+
         Tournament.objects.filter(id = dbtournament.id).update(place1 = Player.objects.get(token = remaining_players[0].token))
+        GameCoordinator.objects.filter(id = self.id).update(is_finished = True)
 
         self.logger.info(f'We have a winner for a tournament: { self.id } - { remaining_players[0].token }')
 
