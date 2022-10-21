@@ -17,6 +17,7 @@ class KuhnGame(object):
     InitialBank     = settings.KUHN_GAME_INITIAL_BANK
     MessagesTimeout = settings.COORDINATOR_WAITING_TIMEOUT
     DelayProcessing = settings.COORDINATOR_DELAY_PROCESSING
+    DelayCardIdentification = settings.COORDINATOR_CARD_DELAY_PROCESSING
 
     def __init__(self, coordinator, player1: KuhnGameLobbyPlayer, player2: KuhnGameLobbyPlayer, game_type: int, channel: queue.Queue):
 
@@ -332,6 +333,12 @@ class KuhnGame(object):
                     turn_order = 2, 
                     actions    = [ CoordinatorActions.Wait ]
                 ))
+
+            # We give some extra time for the players to identify their cards
+            # Overwise one of the players can make a very quick decision, while another player is still in 
+            # the process of the card identification, that may cause an issue because sever asks the second player 
+            # to make a decision while they still did not identify their card
+            time.sleep(KuhnGame.DelayCardIdentification)
 
     def evaluate_round(self):
         # This function evaluate a round's outcome at the terminal stage
