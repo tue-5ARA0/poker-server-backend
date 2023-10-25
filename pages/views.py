@@ -77,29 +77,29 @@ def game_view(request, *args, **kwargs):
 def leaderboard_view(request, *args, **kwargs):
     players = []
     bots    = []
-    for player in Player.objects.all():
-        games           = Game.objects.filter(Q(player1__token = player.token) | Q(player2__token = player.token))
-        games_won       = len(list(filter(lambda game: game.winner == player, games)))
+    # for player in Player.objects.all():
+    #     games           = Game.objects.filter(Q(player1__token = player.token) | Q(player2__token = player.token))
+    #     games_won       = len(list(filter(lambda game: game.winner == player, games)))
         
-        registrations            = list(RoomRegistration.objects.filter(player__token = player.token))
-        tournaments_participated = len(list(filter(lambda reg: reg.room.coordinator.coordinator_type == GameCoordinatorTypes.TOURNAMENT_PLAYERS or reg.room.coordinator.coordinator_type == GameCoordinatorTypes.TOURNAMENT_PLAYERS_WITH_BOTS, registrations))) # hello oneliners in python
+    #     registrations            = list(RoomRegistration.objects.filter(player__token = player.token))
+    #     tournaments_participated = len(list(filter(lambda reg: reg.room.coordinator.coordinator_type == GameCoordinatorTypes.TOURNAMENT_PLAYERS or reg.room.coordinator.coordinator_type == GameCoordinatorTypes.TOURNAMENT_PLAYERS_WITH_BOTS, registrations))) # hello oneliners in python
 
-        tournaments_won = Tournament.objects.filter(place1__token = player.token).count()
-        games_lost = len(games) - games_won
+    #     tournaments_won = Tournament.objects.filter(place1__token = player.token).count()
+    #     games_lost = len(games) - games_won
 
-        stats = {
-            'name': player.name,
-            'group': player.group,
-            'games_total': len(games),
-            'games_won': games_won,
-            'games_lost': games_lost,
-            'tournaments_participated': tournaments_participated,
-            'tournaments_won': tournaments_won
-        }
-        if not player.is_bot:
-            players.append(stats)
-        else:
-            bots.append(stats)
+    #     stats = {
+    #         'name': player.name,
+    #         'group': player.group,
+    #         'games_total': len(games),
+    #         'games_won': games_won,
+    #         'games_lost': games_lost,
+    #         'tournaments_participated': tournaments_participated,
+    #         'tournaments_won': tournaments_won
+    #     }
+    #     if not player.is_bot:
+    #         players.append(stats)
+    #     else:
+    #         bots.append(stats)
 
     # Aggregate bot stats into a single one
     aggr_bots_stats = { 'name': 'Bots (in total)', 'games_total': 0, 'games_won': 0, 'games_lost': 0, 'tournaments_participated': 0, 'tournaments_won': 0 }
