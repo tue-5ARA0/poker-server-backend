@@ -7,7 +7,6 @@ import itertools
 import uuid
 import random
 
-# Create your models here.
 from django.utils.timezone import now
 
 from coordinator.kuhn.kuhn_constants import CARD3, CARD4

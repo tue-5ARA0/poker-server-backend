@@ -7,15 +7,16 @@ This repository contains the server-side implementation for the PokerBot group p
 
 _Setup the Virtual Environment_
 
-Open a new terminal in VSCode and create a new virtual environment by typing `conda env create -f environment.yml` (unix-based systems users should use `environment_linux.yml` file). This command will create a `pokerbot39` virtual environment, if it was not already created when setting up the client repository. For consistency, the client and server backend will use the same virtual environment. Activate the environment by `conda activate pokerbot39`.
+Open a new terminal in VSCode and create a new virtual environment by typing `conda env create -f environment.yml` (non-windows users should use the corresponding environment file). This command will create a `pokerbot39` virtual environment, if it was not already created when setting up the client repository. For consistency, the client and server backend will use the same virtual environment. Activate the environment by `conda activate pokerbot39`.
 
 _Install the Django web framework_
-Django is a webdevelopment framework for Python, and needs to be installed using pip. All requirements for Django are listed in `requirements.txt` (and `requirements_linux.txt` file for unix-based systems users). With the `pokerbot39` environment active, install the Django requirements by typing
+
+Django is a webdevelopment framework for Python, and needs to be installed using pip. All requirements for Django are listed in `requirements.txt` (and the corresponding environment file for non-windows users). With the `pokerbot39` environment active, install the Django requirements by typing
 ```bash
 pip install -r requirements.txt
 ```
 
-_Initialise the Game Protocol and the Database_
+_Initialize the Game Protocol and the Database_
 
 To generate the game protocol and the proper database layout simply run `python init.py`.
 
@@ -27,19 +28,22 @@ You can now start a local server instance:
 python manage.py runserver --settings=configurations.dev.settings
 ```
 
-By default, the server will create two player tokens and print them at startup, e.g:
+By default, the server will create some player tokens and print them at startup, e.g:
 ```bash
-Test player token: 5e527757-0187-4511-a7dd-825fe2014d0a
-Test player token: f9265243-b208-48b4-9cb9-7a865b6baaed
+Test player token: 505ef7d7-22bb-47c2-25ba-bf044bbe9831
+Test player token: ef084b69-ab77-4f0b-be4a-45deb4g93e3a
+Test player token: 14858237-408e-4a20-958f-633f5fbe4708
+Test player token: 69364161-68df-4445-84f8-b616f3ee4a84
 ```
-These tokens can be used for local clients to connect, see the `poker-server-client` readme.
+These tokens can be used for local clients to connect, see the `poker-server-client` readme. When running the backend for the first time, you may need to start the backend twice before the player tokens are generated.
 
 You are free to inspect and modify parameters from the `./configurations/dev/settings.py` file. 
-Note, however, that settings on the public cloud-based server are hidden from you and you will not know the exact values of those parameters.
+Note, however, that settings on the cloud server are hidden from you, and you will not know the exact values of those parameters (card image dimensions are fixed).
+
 
 ## Custom Bot Players
 
-The server backend allows your agent to play against a bot on the server-side, but the implemented bot is not so clever - it is just an agent that plays random moves. To add a new bot create a subfolder in the `bots` directory with a clever agent implementation.
+The server backend allows your agent to play against a bot on the server-side, but the implemented bot is not so clever - it is just an agent that plays random moves. To add a new bot create a subfolder in the `bots` directory with a clever agent implementation. This is not required for the assignment, but can be used for prototyping.
 
 
 ## Docker Desktop
@@ -50,6 +54,4 @@ You can also run a local server backend instance with Docker. If you have [Docke
 docker-compose up
 ```
 
-Note, that first usage of this command is generally very slow as it requires to build a Docker image from scratch. Subsequent usages should reuse cached docker image and will execute much faster.
-
-You also need to run `docker-compose up` twice for the first time to properly generate the server database layout.
+Note that first usage of this command is generally very slow as it requires to build a Docker image from scratch. Subsequent usages should reuse the cached docker image and will execute faster. You will need to run `docker-compose up` twice for the initial setup to properly generate the server database layout.
