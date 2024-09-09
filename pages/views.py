@@ -1,7 +1,8 @@
 
 from django.shortcuts import render
 from coordinator.models import Game, GameCoordinatorTypes, GameRound, Player, RoomRegistration, Tournament, TournamentRound, TournamentRoundBracketItem, TournamentRoundGame, WaitingRoom
-from django.db.models import Q
+from django.db.models import Count, Q, F, Case, When, IntegerField, Sum
+from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect
 from django.conf import settings
 
@@ -74,47 +75,73 @@ def game_view(request, *args, **kwargs):
     except Exception as e:
         return render(request, "game.html", { 'is_game_found': False })
 
-def leaderboard_view(request, *args, **kwargs):
+def fetch_leaderboard_data():
+    players_data = Player.objects.annotate(
+        games_total=Count('player1_games', distinct=True) + Count('player2_games', distinct=True),
+        games_won=Count('games_won', distinct=True),
+        games_lost=F('games_total') - F('games_won'),
+        tournaments_participated=Count(
+            'roomregistration__room__coordinator',
+            filter=Q(
+                roomregistration__room__coordinator__coordinator_type__in=[
+                    GameCoordinatorTypes.TOURNAMENT_PLAYERS,
+                    GameCoordinatorTypes.TOURNAMENT_PLAYERS_WITH_BOTS
+                ]
+            ),
+            distinct=True
+        ),
+        tournaments_won=Count('tournaments_won', distinct=True)
+    ).values('name', 'group', 'games_total', 'games_won', 'games_lost', 'tournaments_participated', 'tournaments_won', 'is_bot')
+
     players = []
-    bots    = []
-    for player in Player.objects.all():
-        games           = Game.objects.filter(Q(player1__token = player.token) | Q(player2__token = player.token))
-        games_won       = len(list(filter(lambda game: game.winner == player, games)))
-        
-        registrations            = list(RoomRegistration.objects.filter(player__token = player.token))
-        tournaments_participated = len(list(filter(lambda reg: reg.room.coordinator.coordinator_type == GameCoordinatorTypes.TOURNAMENT_PLAYERS or reg.room.coordinator.coordinator_type == GameCoordinatorTypes.TOURNAMENT_PLAYERS_WITH_BOTS, registrations))) # hello oneliners in python
+    bots = []
 
-        tournaments_won = Tournament.objects.filter(place1__token = player.token).count()
-        games_lost = len(games) - games_won
-
+    for player in players_data:
         stats = {
-            'name': player.name,
-            'group': player.group,
-            'games_total': len(games),
-            'games_won': games_won,
-            'games_lost': games_lost,
-            'tournaments_participated': tournaments_participated,
-            'tournaments_won': tournaments_won
+            'name': player['name'],
+            'group': player['group'],
+            'games_total': player['games_total'],
+            'games_won': player['games_won'],
+            'games_lost': player['games_lost'],
+            'tournaments_participated': player['tournaments_participated'],
+            'tournaments_won': player['tournaments_won']
         }
-        if not player.is_bot:
+        if not player['is_bot']:
             players.append(stats)
         else:
             bots.append(stats)
 
-    # Aggregate bot stats into a single one
-    aggr_bots_stats = { 'name': 'Bots (in total)', 'games_total': 0, 'games_won': 0, 'games_lost': 0, 'tournaments_participated': 0, 'tournaments_won': 0 }
+    # Aggregate bot stats
+    aggr_bots_stats = Player.objects.filter(is_bot=True).aggregate(
+        games_total=Coalesce(Sum('player1_games', distinct=True), 0) + Coalesce(Sum('player2_games', distinct=True), 0),
+        games_won=Coalesce(Sum('games_won'), 0),
+        tournaments_participated=Coalesce(Sum(
+            Case(
+                When(
+                    roomregistration__room__coordinator__coordinator_type__in=[
+                        GameCoordinatorTypes.TOURNAMENT_PLAYERS,
+                        GameCoordinatorTypes.TOURNAMENT_PLAYERS_WITH_BOTS
+                    ],
+                    then=1
+                ),
+                default=0,
+                output_field=IntegerField()
+            )
+        ), 0),
+        tournaments_won=Coalesce(Sum('tournaments_won'), 0)
+    )
 
-    for bot in bots:
-        aggr_bots_stats['games_total']              += bot['games_total']
-        aggr_bots_stats['games_won']                += bot['games_won']
-        aggr_bots_stats['games_lost']               += bot['games_lost']
-        aggr_bots_stats['tournaments_participated'] += bot['tournaments_participated']
-        aggr_bots_stats['tournaments_won']          += bot['tournaments_won']
+    aggr_bots_stats['name'] = 'Bots (in total)'
+    aggr_bots_stats['games_lost'] = aggr_bots_stats['games_total'] - aggr_bots_stats['games_won']
 
-    leaderboard = [ *players, aggr_bots_stats ]
-    leaderboard = sorted(leaderboard, key = lambda d: -d['tournaments_won'])
-    
-    return render(request, "leaderboard.html", { 'leaderboard': leaderboard })
+    leaderboard = [*players, aggr_bots_stats]
+    leaderboard = sorted(leaderboard, key=lambda d: -d['tournaments_won'])
+
+    return leaderboard
+
+def leaderboard_view(request, *args, **kwargs):
+    leaderboard = fetch_leaderboard_data()
+    return render(request, "leaderboard.html", {'leaderboard': leaderboard})
 
 def tournament_view(request, *args, **kwargs):
     try: 
