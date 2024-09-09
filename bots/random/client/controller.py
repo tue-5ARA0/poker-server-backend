@@ -1,4 +1,3 @@
-import random
 import grpc
 
 from client.state import ClientGameState
@@ -8,6 +7,7 @@ from PIL import Image
 from proto.game import game_pb2
 from proto.game import game_pb2_grpc
 from enum import Enum
+
 class ControllerActions(str, Enum):
     Connect = 'CONNECT'
     NewRound = 'ROUND'
