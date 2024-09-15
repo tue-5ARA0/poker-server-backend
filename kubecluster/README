@@ -3,3 +3,6 @@ Create dashboard to easier use
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 ```
 
+For easier use, I would recommend to add into your project a folder `kube` which will hold a kubeconfig from scaleway and add a new env variable `KUBECONFIG=<path-to-your-kube>`
+
+To check that you logined in the cluster run `kubectl cluster-info`
