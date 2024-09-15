@@ -15,17 +15,17 @@ spec:
     spec:
       containers:
         - name: kuhn-poker-backend
-          image: rg.fr-par.scw.cloud/namespace-gallant-brown/pokerbot:0.0.2
+          image: rg.fr-par.scw.cloud/namespace-gallant-brown/pokerbot:0.0.8
           command: 
-          - /bin/bash
-          - -c
-          - |
-            python manage.py makemigrations --settings=configurations.docker.settings
-            python manage.py makemigrations coordinator --settings=configurations.docker.settings
-            python manage.py migrate coordinator --settings=configurations.docker.settings
-            python manage.py migrate --run-syncdb --settings=configurations.docker.settings
-            python manage.py ensure_adminuser --settings=configurations.docker.settings --username=docker --email=docker@docker.com --password=docker
-            python manage.py runserver 0.0.0.0:8002 --settings=configurations.docker.settings --noreload
+            - /bin/bash
+            - -c
+            - |
+              python manage.py makemigrations --settings=configurations.prod.settings
+              python manage.py makemigrations coordinator --settings=configurations.prod.settings
+              python manage.py migrate coordinator --settings=configurations.prod.settings
+              python manage.py migrate --run-syncdb --settings=configurations.prod.settings
+              python manage.py ensure_adminuser --settings=configurations.prod.settings --username=docker --email=docker@docker.com --password=hopdockerdocker
+              python manage.py runserver 0.0.0.0:8000 --settings=configurations.prod.settings --noreload
           ports:
           - containerPort: 8000
           - containerPort: 50051
