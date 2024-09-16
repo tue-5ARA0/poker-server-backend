@@ -32,7 +32,12 @@ class Card:
         font = ImageFont.truetype(random.choice(self.FONTS), size = Card.IMG_SIZE - 6)  # Pick a random font
         img = Image.new('L', (Card.IMG_SIZE, Card.IMG_SIZE), color = 255)
         draw = ImageDraw.Draw(img)
-        (text_width, text_height) = draw.textsize(text, font = font)  # Extract text size
+
+         # Get the bounding box of the text
+        bbox = font.getbbox(text)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        
         draw.text(((Card.IMG_SIZE - text_width) / 2, (Card.IMG_SIZE - text_height) / 2 - 4), text, fill = 0, font = font)
 
         # Random rotate transformation

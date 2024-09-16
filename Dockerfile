@@ -45,7 +45,7 @@ COPY . ./
 # Ensure __init__.py files are present
 RUN touch proto/__init__.py
 
-# Regenerate protobuf files
+# Regenerate protofiles
 RUN poetry run python -m grpc_tools.protoc \
     -I./proto \
     --python_out=. \
