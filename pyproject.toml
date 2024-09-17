@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "poker-server-backend"
+version = "0.0.1"
+description = "Poker bot server backend for 5AR0"
+authors = ["Mykola Lukashchuk <nikola.lukashuk@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "3.1.4"
+djangogrpcframework = "0.2"
+django-mathfilters = "1.0.0"
+django-log-viewer = "1.1.4"
+
+matplotlib = "^3.9.2"
+protobuf = "5.27.2"
+psycopg2 = "^2.9.9"
+sqlparse = "^0.5.1"
+urllib3 = "^2.2.2"
+grpcio = "^1.66"
+grpcio-tools = "^1.66"
+pillow = "^10.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

@@ -8,4 +8,5 @@ db.sqlite3
 **/.DS_Store
 **/__pycache__
 .python-version
-
+kube/*
+deploy/database_configmap.yaml
