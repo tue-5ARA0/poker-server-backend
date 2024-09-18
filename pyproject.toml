@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "poker-server-backend"
-version = "0.1.1"
+version = "0.1.2"
 description = "Poker bot server backend for 5AR0"
 authors = ["Mykola Lukashchuk <nikola.lukashuk@gmail.com>"]
 readme = "README.md"
