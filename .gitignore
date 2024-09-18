@@ -9,3 +9,4 @@ db.sqlite3
 **/__pycache__
 .python-version
 kube/*
+deploy/database_configmap.yaml

@@ -1,5 +1,46 @@
-Create dashboard to easier use
+# Poker Server Backend Deployment
+
+This repository contains the backend code for the Poker Bot Server, designed for the 5AR0 course.
+
+## Prerequisites
+
+Before you begin, ensure you have the following:
+
+1. A Kubernetes cluster with an accessible control plane
+2. `kubectl` installed and configured to interact with your cluster
+3. A PostgreSQL database accessible through VPC in your Kubernetes cluster
+4. Docker installed on your local machine
+5. Access to a container registry (e.g., Scaleway Container Registry)
+
+## Configure kubectl
+
+Create a kube folder in your project and add your kubeconfig file from your cloud provider (e.g., Scaleway).
+Set the KUBECONFIG environment variable:
+```
+export KUBECONFIG=<path-to-your-kube>/kubeconfig.yaml
+```
+
+## Verify your connection to the cluster
+
+```
+kubectl cluster-info
+```
+
+## Install Kubernetes Dashboard
+
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 ```
 
+## Create Namespace and ConfigMap
+
+```
+kubectl apply -f kubecluster/poker/namespace.yaml
+kubectl apply -f deploy/database_configmap_template.yaml
+```
+
+## How to update your code for poker bot server in the cloud?
+
+in the root Makefile there is a `TAG=0.0.8` line like this, please update it for a bigger number.
+
+then run in the root of the repo `make build-and-push`

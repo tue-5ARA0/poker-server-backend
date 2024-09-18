@@ -1,7 +1,7 @@
 # Variables
 REGISTRY=rg.fr-par.scw.cloud/namespace-gallant-brown
 IMAGE_NAME=pokerbot
-TAG=0.0.1
+TAG=0.1.1
 
 # Full image name
 FULL_IMAGE_NAME=$(REGISTRY)/$(IMAGE_NAME):$(TAG)
@@ -20,3 +20,4 @@ build-and-push: build push
 # Print the full image name (useful for debugging)
 print-image-name:
 	@echo $(FULL_IMAGE_NAME)
+

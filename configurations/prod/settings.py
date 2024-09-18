@@ -4,7 +4,7 @@ from backend.settings import *
 # This settings are for docker version of a local poker server
 # Note that setting on an actual server used for assignments might (and will) be different
 DEBUG = False
-ALLOWED_HOSTS = [ '0.0.0.0', 'localhost', '127.0.0.1' ]
+ALLOWED_HOSTS = ['*']
 
 GRPC_SERVER_ADDRPORT = '0.0.0.0:50051'
 GRPC_MAX_WORKERS = 64 # Note that each player reserves one worker, if this setting is low tournament may not be even able to start
