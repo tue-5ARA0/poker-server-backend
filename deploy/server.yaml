@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: kuhn-poker-backend
-          image: rg.fr-par.scw.cloud/namespace-gallant-brown/pokerbot:0.1.1
+          image: rg.fr-par.scw.cloud/namespace-gallant-brown/pokerbot:0.1.2
           command: 
             - /bin/bash
             - -c

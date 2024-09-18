@@ -1,7 +1,9 @@
 
 from django.shortcuts import render
 from coordinator.models import Game, GameCoordinatorTypes, GameRound, Player, RoomRegistration, Tournament, TournamentRound, TournamentRoundBracketItem, TournamentRoundGame, WaitingRoom
-from django.db.models import Q
+from django.db.models import Count, Q, F, Case, When, IntegerField, Sum, TextField
+from django.db.models.functions import Coalesce, Cast
+from django.db.models.functions import Coalesce
 from django.http import HttpResponseRedirect
 from django.conf import settings
 
@@ -74,47 +76,73 @@ def game_view(request, *args, **kwargs):
     except Exception as e:
         return render(request, "game.html", { 'is_game_found': False })
 
-def leaderboard_view(request, *args, **kwargs):
+def fetch_leaderboard_data():
+    players_data = Player.objects.annotate(
+        games_total=Count('games_player1', distinct=True) + Count('games_player2', distinct=True),
+        tournaments_participated=Count(
+            'roomregistration__room__coordinator',
+            filter=Q(
+                roomregistration__room__coordinator__coordinator_type__in=[
+                    GameCoordinatorTypes.TOURNAMENT_PLAYERS,
+                    GameCoordinatorTypes.TOURNAMENT_PLAYERS_WITH_BOTS
+                ]
+            ),
+            distinct=True
+        )
+    ).values('token', 'name', 'group', 'games_total', 'tournaments_participated', 'is_bot')
+
+    # Separate queries for games won and tournaments won
+    games_won = Game.objects.values('winner').annotate(count=Count('id'))
+    games_won_dict = {str(g['winner']): g['count'] for g in games_won}
+
+    tournaments_won = Tournament.objects.values('place1').annotate(count=Count('id'))
+    tournaments_won_dict = {str(t['place1']): t['count'] for t in tournaments_won}
+
     players = []
-    bots    = []
-    for player in Player.objects.all():
-        games           = Game.objects.filter(Q(player1__token = player.token) | Q(player2__token = player.token))
-        games_won       = len(list(filter(lambda game: game.winner == player, games)))
+    bots = []
+    bot_totals = {
+        'games_total': 0,
+        'games_won': 0,
+        'tournaments_participated': 0,
+        'tournaments_won': 0
+    }
+
+    for player in players_data:
+        player_token = str(player['token'])
+        games_won = games_won_dict.get(player_token, 0)
+        tournaments_won = tournaments_won_dict.get(player_token, 0)
         
-        registrations            = list(RoomRegistration.objects.filter(player__token = player.token))
-        tournaments_participated = len(list(filter(lambda reg: reg.room.coordinator.coordinator_type == GameCoordinatorTypes.TOURNAMENT_PLAYERS or reg.room.coordinator.coordinator_type == GameCoordinatorTypes.TOURNAMENT_PLAYERS_WITH_BOTS, registrations))) # hello oneliners in python
-
-        tournaments_won = Tournament.objects.filter(place1__token = player.token).count()
-        games_lost = len(games) - games_won
-
         stats = {
-            'name': player.name,
-            'group': player.group,
-            'games_total': len(games),
+            'name': player['name'],
+            'group': player['group'],
+            'games_total': player['games_total'],
             'games_won': games_won,
-            'games_lost': games_lost,
-            'tournaments_participated': tournaments_participated,
+            'games_lost': player['games_total'] - games_won,
+            'tournaments_participated': player['tournaments_participated'],
             'tournaments_won': tournaments_won
         }
-        if not player.is_bot:
-            players.append(stats)
-        else:
+        
+        if player['is_bot']:
             bots.append(stats)
+            for key in bot_totals:
+                bot_totals[key] += stats[key]
+        else:
+            players.append(stats)
 
-    # Aggregate bot stats into a single one
-    aggr_bots_stats = { 'name': 'Bots (in total)', 'games_total': 0, 'games_won': 0, 'games_lost': 0, 'tournaments_participated': 0, 'tournaments_won': 0 }
+    aggr_bots_stats = {
+        'name': 'Bots (in total)',
+        **bot_totals,
+        'games_lost': bot_totals['games_total'] - bot_totals['games_won']
+    }
 
-    for bot in bots:
-        aggr_bots_stats['games_total']              += bot['games_total']
-        aggr_bots_stats['games_won']                += bot['games_won']
-        aggr_bots_stats['games_lost']               += bot['games_lost']
-        aggr_bots_stats['tournaments_participated'] += bot['tournaments_participated']
-        aggr_bots_stats['tournaments_won']          += bot['tournaments_won']
+    leaderboard = [*players, aggr_bots_stats]
+    leaderboard = sorted(leaderboard, key=lambda d: -d['tournaments_won'])
 
-    leaderboard = [ *players, aggr_bots_stats ]
-    leaderboard = sorted(leaderboard, key = lambda d: -d['tournaments_won'])
-    
-    return render(request, "leaderboard.html", { 'leaderboard': leaderboard })
+    return leaderboard
+
+def leaderboard_view(request, *args, **kwargs):
+    leaderboard = fetch_leaderboard_data()
+    return render(request, "leaderboard.html", {'leaderboard': leaderboard})
 
 def tournament_view(request, *args, **kwargs):
     try: 
