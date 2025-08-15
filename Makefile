@@ -1,7 +1,7 @@
 # Variables
 REGISTRY=rg.fr-par.scw.cloud/namespace-gallant-brown
 IMAGE_NAME=pokerbot
-TAG=0.1.3
+TAG=0.1.4
 
 # Full image name
 FULL_IMAGE_NAME=$(REGISTRY)/$(IMAGE_NAME):$(TAG)
