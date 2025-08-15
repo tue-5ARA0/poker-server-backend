@@ -13,7 +13,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         wget=1.21-1+deb11u1 \
         gnupg=2.2.27-2+deb11u2 \
-        curl=7.74.0-1.3+deb11u13 \
+        curl=7.74.0-1.3+deb11u15 \
         build-essential=12.9 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -29,7 +29,7 @@ RUN apt-get update \
     && apt-get install --no-install-recommends -y postgresql-client-13=13.16-0+deb11u1 \
                                                   libpq-dev=13.16-0+deb11u1 \
                                                   libpq5=13.16-0+deb11u1 \
-                                                  ffmpeg=7:4.3.7-0+deb11u1 \
+                                                  
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
