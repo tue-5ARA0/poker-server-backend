@@ -1,5 +1,5 @@
 # Variables
-REGISTRY=rg.fr-par.scw.cloud/namespace-gallant-brown
+REGISTRY=rg.nl-ams.scw.cloud/namespace-pedantic-colden
 IMAGE_NAME=pokerbot
 TAG=0.1.4
 

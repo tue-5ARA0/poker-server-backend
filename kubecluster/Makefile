@@ -19,3 +19,6 @@ create-dashboard:
 
 create-database-configmap:
 	kubectl apply -f ../deploy/database_configmap.yaml
+
+create-server:
+	kubectl apply -f ../deploy/server.yaml
