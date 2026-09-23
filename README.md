@@ -6,11 +6,12 @@ This repository contains the server-side implementation for the PokerBot group p
 
 ### Prerequisites
 
-Docker Desktop installed on your machine
+Docker Desktop installed on your machine.
 
-### Starting the Server
+### Starting a Local Server
 
-- Open a terminal in the project directory.
+- Open Docker Desktop on your machine;
+- Open a VSCode terminal in the project directory;
 - Run the following command to start the local server:
 ```bash
 docker-compose up
