@@ -1,9 +1,9 @@
-FROM --platform=linux/amd64 python:3.10.10-slim-bullseye
+FROM --platform=linux/amd64 python:3.10.22-slim-bookworm
 
 WORKDIR /code
 
 # Set the PYTHONPATH environment variable
-ENV PYTHONPATH="/code:${PYTHONPATH}"
+ENV PYTHONPATH="/code"
 
 # Set SHELL to bash with pipefail option as we use pipes in our scripts
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -11,9 +11,9 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Build dependencies
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
-        wget=1.21-1+deb11u1 \
-        gnupg=2.2.27-2+deb11u2 \
-        curl=7.74.0-1.3+deb11u15 \
+        wget=1.21.3-1+deb12u1 \
+        gnupg=2.2.40-1.1+deb12u2 \
+        curl=7.88.1-10+deb12u15 \
         build-essential=12.9 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -22,14 +22,11 @@ RUN apt-get update \
 RUN python3 -m pip install --no-cache-dir poetry==1.8.2 \
     && poetry config virtualenvs.create false
 
-# Postgres client
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt bullseye-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-RUN curl --silent https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+# Postgres client (these pinned versions are provided by Debian itself)
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y postgresql-client-13=13.16-0+deb11u1 \
-                                                  libpq-dev=13.16-0+deb11u1 \
-                                                  libpq5=13.16-0+deb11u1 \
-                                                  
+    && apt-get install --no-install-recommends -y postgresql-client-15=15.19-0+deb12u1 \
+                                                  libpq-dev=15.19-0+deb12u1 \
+                                                  libpq5=15.19-0+deb12u1 \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
