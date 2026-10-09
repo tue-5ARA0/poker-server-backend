@@ -1,5 +1,5 @@
 # Variables
-REGISTRY=rg.nl-ams.scw.cloud/namespace-pedantic-colden
+REGISTRY=rg.nl-ams.scw.cloud/namespace-elated-williams
 IMAGE_NAME=pokerbot
 TAG=0.1.5
 
