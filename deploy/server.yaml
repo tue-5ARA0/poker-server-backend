@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: kuhn-poker-backend
-          image: rg.nl-ams.scw.cloud/namespace-pedantic-colden/pokerbot:0.1.5
+          image: rg.nl-ams.scw.cloud/namespace-elated-williams/pokerbot:0.1.5
           command: 
             - /bin/bash
             - -c
