@@ -12,6 +12,18 @@ Before you begin, ensure you have the following:
 4. Docker installed on your local machine
 5. Access to a container registry (e.g., Scaleway Container Registry)
 
+Create a registry namespace before publishing images. For Scaleway, you need an API key with permission to push images to that namespace. Set `REGISTRY` in the root `Makefile` and the matching image path in `deploy/server.yaml` to your registry namespace.
+
+## Log in to the container registry
+
+With the Scaleway CLI installed and initialized (`scw init`), authenticate Docker using the CLI's configured credentials:
+
+```bash
+scw registry login region=nl-ams
+```
+
+Use the region of your registry. This enables your local Docker client to push images; Kubernetes needs separate credentials to pull private images.
+
 ## Configure kubectl
 
 Create a kube folder in your project and add your kubeconfig file from your cloud provider (e.g., Scaleway).
@@ -39,8 +51,45 @@ kubectl apply -f kubecluster/poker/namespace.yaml
 kubectl apply -f deploy/database_configmap_template.yaml
 ```
 
+## Allow Kubernetes to pull private images
+
+For a private registry, create the pull secret once after creating the `poker` namespace. Replace `YOUR_NAMESPACE` with your registry namespace (and use your registry's region):
+
+```bash
+kubectl -n poker create secret docker-registry registry-secret \
+  --docker-server=rg.nl-ams.scw.cloud/YOUR_NAMESPACE \
+  --docker-username=nologin \
+  --docker-password="$(scw config get secret-key)"
+```
+
+This sends the Scaleway credentials to the cluster selected by `KUBECONFIG`. The key is briefly passed as a process argument. The command assumes `registry-secret` does not already exist. Your local Docker login does not authenticate Kubernetes; `deploy/server.yaml` already references this secret through `imagePullSecrets` in the same `poker` namespace.
+
 ## How to update your code for poker bot server in the cloud?
 
-in the root Makefile there is a `TAG=0.0.8` line like this, please update it for a bigger number.
+From the repository root, choose a new version and run:
 
-then run in the root of the repo `make build-and-push`
+```bash
+make bump 0.1.6
+make build-and-push
+kubectl apply -f deploy/server.yaml
+```
+
+`make bump` updates the version in both the Makefile and deployment manifest. `make build-and-push` builds the image and uploads it to the registry. `kubectl apply` updates the Kubernetes deployment to run that image; uploading alone does not update the running server.
+
+## Verify and open the server
+
+```bash
+kubectl -n poker rollout status deployment/kuhn-poker-backend --timeout=180s
+kubectl -n poker logs deployment/kuhn-poker-backend --tail=100
+kubectl -n poker get service kuhn-poker-backend
+```
+
+Use the Service's `EXTERNAL-IP` to open `http://<EXTERNAL-IP>/home/`. It may initially show `<pending>` while the load balancer is being provisioned. The admin page is at `/admin/`, and the gRPC endpoint is `<EXTERNAL-IP>:50051`.
+
+Alternatively, access the website through a local tunnel:
+
+```bash
+kubectl -n poker port-forward service/kuhn-poker-backend 8080:80
+```
+
+Keep this command running and open `http://localhost:8080/home/`. This checks access to the application through Kubernetes, bypassing the public load balancer.
